@@ -82,3 +82,20 @@ class BOT_IQ_Option:
                 return self.instance.check_win_v4(id)
         except Exception:
             print('version or id is not available')
+            
+    def call_or_put_digital(self, price, active, action, timeframe):
+        return self.instance.buy_digital_spot(active, price, action, timeframe)
+    
+    def check_win_or_loss_digital(self, id, version='v2'):
+        
+        try:
+            if version == 'v2':
+                return self.instance.check_win_digital(id)
+        except Exception as error:
+            print(f'version error: {error}')
+            
+    def get_profit(self, active, type):
+        return self.instance.get_all_profit()[active][type]
+    
+    def balance(self):
+        return self.instance.get_balance()
