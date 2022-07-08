@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from iqoptionapi.stable_api import IQ_Option
 import time
 from datetime import datetime
@@ -67,8 +68,12 @@ class BOT_IQ_Option:
         self.instance.stop_mood_stream(active)
         return mood
     
-    def get_all_actives(self):
-        return {code:act for act,code in self.instance.get_all_ACTIVES_OPCODE().items()}
+    def get_all_actives(self, act=True):
+        
+        if act:
+            return {code:act for act,code in self.instance.get_all_ACTIVES_OPCODE().items()}
+        else:
+            return self.instance.get_all_ACTIVES_OPCODE()
     
     def call_or_put(self, price, active, action, timeframe):
         return self.instance.buy(price, active, action, timeframe)
