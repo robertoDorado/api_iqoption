@@ -37,6 +37,9 @@ loss_value = []
 red_analitics = []
 green_analitics = []
 
+diference_green = []
+diference_red = []
+
 one_minute_candle = [12, 17]
 i = 0
 
@@ -62,6 +65,8 @@ while True:
         candles = [{'close': i['close'], 'open': i['open'],
         'candle_color': 'red_candle' if i['open'] > i['close']
         else 'green_candle' if i['open'] < i['close'] else 'dogi'} for i in candles]
+        
+        media_candles = [{'green':i['close'] - i['open'], 'red': i['open'] - i['close']} for i in candles]
 
         red_candles = [x['candle_color']
             for x in candles if x['candle_color'] == 'red_candle']
@@ -74,6 +79,12 @@ while True:
         
         if len(red_analitics) <= 3 and len(green_analitics) <= 3:
             
+            for med_c in media_candles:
+                
+                if len(diference_green) <= 3 and len(diference_red) <= 3:
+                    diference_green.append(med_c['green'])
+                    diference_red.append(med_c['red'])
+            
             red_analitics.append(percent_red)
             green_analitics.append(percent_green)
             
@@ -82,10 +93,14 @@ while True:
             elif sum(green_analitics) < sum(red_analitics):
                 critical_percent = sum(red_analitics) - sum(green_analitics)
                 
-            if sum(green_analitics) > sum(red_analitics) and critical_percent > 100 and sum(red_analitics) < 100:
+        
+            if sum(green_analitics) > sum(red_analitics) and critical_percent > 100 and sum(red_analitics) < 100 and round(sum(diference_green), 2) >= 0 and round(sum(diference_green), 2) <= 2:
                 
                 print(f'venda: {sum(green_analitics)}%')
                 print(f'compra: {sum(red_analitics)}%')
+                
+                print(f'oscillation_green: {round(sum(diference_green), 2)}')
+                print(f'oscillation_red: {round(sum(diference_red), 2)}')
                 
                 if balance > value:
                     status, id = API.call_or_put(value, actives[actives_code], 'put', 1)
@@ -109,10 +124,13 @@ while True:
                         
                         print(f'total loss: {len(loss)}, - R$ {round(sum(loss_value), 2) * - 1}')
             
-            if sum(red_analitics) > sum(green_analitics) and critical_percent > 100 and sum(green_analitics) < 100:
+            if sum(red_analitics) > sum(green_analitics) and critical_percent > 100 and sum(green_analitics) < 100 and round(sum(diference_red), 2) >= -2 and round(sum(diference_red), 2) <= 0:
                 
                 print(f'venda: {sum(green_analitics)}%')
                 print(f'compra: {sum(red_analitics)}%')
+                
+                print(f'oscillation_green: {round(sum(diference_green), 2)}')
+                print(f'oscillation_red: {round(sum(diference_red), 2)}')
                 
                 if balance > value:
                     status, id = API.call_or_put(value, actives[actives_code], 'call', 1)
