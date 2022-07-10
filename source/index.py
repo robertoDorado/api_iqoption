@@ -16,7 +16,7 @@ actives = API.get_all_actives()
 actives_code = [1, 3, 5]
 actives_code_otc = [76, 77, 79]
 
-value = 5
+value = 10
 
 if date.weekday() == 5 or date.weekday() == 6:
     actives_code = choices(actives_code_otc)[0]
@@ -36,6 +36,8 @@ loss_value = []
 
 red_analitics = []
 green_analitics = []
+
+one_minute_candle = [12, 17]
 i = 0
 
 while True:
@@ -55,7 +57,7 @@ while True:
             print('mercado ruim para efetuar operações de trade')
             exit()
         
-        candles = API.get_all_candles(actives[actives_code], 60, 12) # 62 velas para decisões de 5 minutos e 12 velas para 1 minuto
+        candles = API.get_all_candles(actives[actives_code], 60, choices(one_minute_candle)[0]) # 62 velas para decisões de 5 minutos e (12, 17) velas para 1 minuto
 
         candles = [{'close': i['close'], 'open': i['open'],
         'candle_color': 'red_candle' if i['open'] > i['close']
@@ -80,7 +82,7 @@ while True:
             elif sum(green_analitics) < sum(red_analitics):
                 critical_percent = sum(red_analitics) - sum(green_analitics)
                 
-            if green_analitics > red_analitics and critical_percent > 100:
+            if sum(green_analitics) > sum(red_analitics) and critical_percent > 100 and sum(red_analitics) < 100:
                 
                 print(f'venda: {sum(green_analitics)}%')
                 print(f'compra: {sum(red_analitics)}%')
@@ -107,7 +109,7 @@ while True:
                         
                         print(f'total loss: {len(loss)}, - R$ {round(sum(loss_value), 2) * - 1}')
             
-            if red_analitics > green_analitics and critical_percent > 100:
+            if sum(red_analitics) > sum(green_analitics) and critical_percent > 100 and sum(green_analitics) < 100:
                 
                 print(f'venda: {sum(green_analitics)}%')
                 print(f'compra: {sum(red_analitics)}%')
