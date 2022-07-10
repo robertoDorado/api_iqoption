@@ -16,6 +16,8 @@ actives = API.get_all_actives()
 actives_code = [1, 3, 5]
 actives_code_otc = [76, 77, 79]
 
+value = 5
+
 if date.weekday() == 5 or date.weekday() == 6:
     actives_code = choices(actives_code_otc)[0]
     print(f'iniciando a busca no ativo {actives[actives_code]}')
@@ -25,8 +27,6 @@ else:
 
 profit = API.get_profit(actives[actives_code], 'turbo') * 100
 balance = API.balance()
-    
-value = 1000
 
 wins = []
 loss = []
@@ -44,18 +44,18 @@ while True:
         
         i = i + 1
         
-        if i == 10 or i == 20 or i == 30:
+        if i == 10 or i == 20 or i == 30 or i == 40 or i == 50 or i == 60:
             if date.weekday() == 5 or date.weekday() == 6:
                 actives_code = choices(actives_code_otc)[0]
                 print(f'buscando em {actives[actives_code]}')
             else:
                 actives_code = choices(actives_code)[0]
                 print(f'buscando em {actives[actives_code]}')
-        elif i > 30:
+        elif i > 60:
             print('mercado ruim para efetuar operações de trade')
             exit()
         
-        candles = API.get_all_candles(actives[actives_code], 60, 12) # 58 velas para decisões de 5 minutos e 12 velas para 1 minuto
+        candles = API.get_all_candles(actives[actives_code], 60, 12) # 62 velas para decisões de 5 minutos e 12 velas para 1 minuto
 
         candles = [{'close': i['close'], 'open': i['open'],
         'candle_color': 'red_candle' if i['open'] > i['close']
@@ -99,13 +99,11 @@ while True:
                     if status == 'win':
                         wins.append(status)
                         win_value.append(check_value)
-                        value = value + (value * 0.10)
                         
                         print(f'total wins: {len(wins)}, R$ {round(sum(win_value), 2)}')
                     else:
                         loss.append(status)
                         loss_value.append(check_value)
-                        value = value - (value * 0.10)
                         
                         print(f'total loss: {len(loss)}, - R$ {round(sum(loss_value), 2) * - 1}')
             
@@ -128,13 +126,11 @@ while True:
                     if status == 'win':
                         wins.append(status)
                         win_value.append(check_value)
-                        value = value + (value * 0.10)
                         
                         print(f'total wins: {len(wins)}, R$ {round(sum(win_value), 2)}')
                     else:
                         loss.append(status)
                         loss_value.append(check_value)
-                        value = value - (value * 0.10)
                         
                         print(f'total loss: {len(loss)}, -R$ {round(sum(loss_value), 2) * - 1}')
                             
