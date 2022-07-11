@@ -19,11 +19,12 @@ code_otc = [76, 77, 79]
 if date.weekday() == 5 or date.weekday() == 6:
     actives_code = choices(code_otc)[0]
     print(f'iniciando a busca no ativo {actives[actives_code]}')
-elif date.weekday() != 5 or date.weekday() != 6 and date.hour < 17:
+elif date.weekday() != 5 and date.weekday() != 6 and date.hour < 17:
     actives_code = choices(code)[0]
     print(f'iniciando a busca no ativo {actives[actives_code]}')
-else:
-    print('mercado fechado')
+elif date.weekday() != 5 and date.weekday() != 6 and date.hour >= 17:
+    actives_code = choices(code_otc)[0]
+    print(f'iniciando a busca no ativo {actives[actives_code]}')
 
 profit = API.get_profit(actives[actives_code], 'turbo')
 balance = API.balance()
