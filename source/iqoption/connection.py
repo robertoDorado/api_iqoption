@@ -104,6 +104,3 @@ class BOT_IQ_Option:
     
     def balance(self):
         return self.instance.get_balance()
-    
-    def kelly_discretion(self, prob_wins, prob_loss, payoff):
-        return (prob_wins * payoff ) - prob_loss / payoff
