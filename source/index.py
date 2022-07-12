@@ -3,7 +3,8 @@ from iqoption.connection import BOT_IQ_Option
 from random import choices
 from datetime import datetime
 
-API = BOT_IQ_Option()
+account_type = "PRACTICE"
+API = BOT_IQ_Option(account_type)
 
 if API.check_my_connection() == False:
     print('erro na conexão')
@@ -16,8 +17,8 @@ actives = API.get_all_actives()
 code = [1, 3, 6, 99, 4, 5, 101]
 code_otc = [76, 77, 79]
 
-otc_perc = 70
-otc_osc = 0.07
+otc_perc = 34
+otc_osc = 0.034
 
 perc = 60
 osc = 0.06
@@ -39,7 +40,10 @@ elif date.weekday() != 5 and date.weekday() != 6 and date.hour >= 17:
     print(f'iniciando a busca no ativo {actives[actives_code]}')
 
 profit = API.get_profit(actives[actives_code], 'turbo')
-balance = API.balance()
+
+balance = API.balance(account_type)
+print(f'my account is {account_type}: R$ {balance}')
+API.set_time_sleep(2)
 
 pot = 1000
 value = pot

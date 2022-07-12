@@ -6,10 +6,10 @@ from pytz import timezone
 
 class BOT_IQ_Option:
     
-    def __init__(self):
+    def __init__(self, account_type):
         self.email = 'robertodorado7@gmail.com'
         self.password = 'Rob@19101910'
-        self.instance = IQ_Option(self.email, self.password)
+        self.instance = IQ_Option(self.email, self.password, account_type)
         self.current_timestamp = time.time()
     
     def conn(self):
@@ -102,5 +102,6 @@ class BOT_IQ_Option:
     def get_profit(self, active, type):
         return self.instance.get_all_profit()[active][type]
     
-    def balance(self):
+    def balance(self, type_balance):
+        self.instance.change_balance(type_balance)
         return self.instance.get_balance()
