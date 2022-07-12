@@ -16,19 +16,25 @@ actives = API.get_all_actives()
 code = [1, 3, 6, 99, 4, 5, 101]
 code_otc = [76, 77, 79]
 
+otc_perc = 70
+otc_osc = 0.07
+
+perc = 60
+osc = 0.06
+
 if date.weekday() == 5 or date.weekday() == 6:
-    dif_percent = 70
-    dif_osc = 0.07
+    dif_percent = otc_perc
+    dif_osc = otc_osc
     actives_code = choices(code_otc)[0]
     print(f'iniciando a busca no ativo {actives[actives_code]}')
 elif date.weekday() != 5 and date.weekday() != 6 and date.hour < 17:
-    dif_percent = 60
-    dif_osc = 0.06
+    dif_percent = perc
+    dif_osc = osc
     actives_code = choices(code)[0]
     print(f'iniciando a busca no ativo {actives[actives_code]}')
 elif date.weekday() != 5 and date.weekday() != 6 and date.hour >= 17:
-    dif_percent = 70
-    dif_osc = 0.07
+    dif_percent = otc_perc
+    dif_osc = otc_osc
     actives_code = choices(code_otc)[0]
     print(f'iniciando a busca no ativo {actives[actives_code]}')
 
@@ -70,8 +76,8 @@ while True:
             
         if date.weekday() == 5 or date.weekday() == 6:
             
-            dif_percent = 70
-            dif_osc = 0.07
+            dif_percent = otc_perc
+            dif_osc = otc_osc
             actives_code = choices(code_otc)[0]
             print(f'buscando em {actives[actives_code]}')
             
@@ -83,8 +89,8 @@ while True:
             
         elif date.weekday() != 5 and date.weekday() != 6 and date.hour < 17:
             
-            dif_percent = 60
-            dif_osc = 0.06
+            dif_percent = perc
+            dif_osc = osc
             actives_code = choices(code)[0]
             print(f'buscando em {actives[actives_code]}')
             
@@ -96,8 +102,8 @@ while True:
             
         elif date.weekday() != 5 and date.weekday() != 6 and date.hour >= 17:
             
-            dif_percent = 70
-            dif_osc = 0.07
+            dif_percent = otc_osc
+            dif_osc = otc_osc
             actives_code = choices(code_otc)[0]
             print(f'buscando em {actives[actives_code]}')
             
