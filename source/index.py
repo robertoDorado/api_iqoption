@@ -17,12 +17,18 @@ code = [1, 3, 6, 99, 4, 5, 101]
 code_otc = [76, 77, 79]
 
 if date.weekday() == 5 or date.weekday() == 6:
+    dif_percent = 70
+    dif_osc = 0.07
     actives_code = choices(code_otc)[0]
     print(f'iniciando a busca no ativo {actives[actives_code]}')
 elif date.weekday() != 5 and date.weekday() != 6 and date.hour < 17:
+    dif_percent = 60
+    dif_osc = 0.06
     actives_code = choices(code)[0]
     print(f'iniciando a busca no ativo {actives[actives_code]}')
 elif date.weekday() != 5 and date.weekday() != 6 and date.hour >= 17:
+    dif_percent = 70
+    dif_osc = 0.07
     actives_code = choices(code_otc)[0]
     print(f'iniciando a busca no ativo {actives[actives_code]}')
 
@@ -46,7 +52,7 @@ green_analitics = []
 osc_green = []
 osc_red = []
 
-one_minute_candle = [12, 17, 15]
+one_minute_candle = [12, 17, 15, 7]
 five_minutes_candles = [62]
 
 one_minute = True
@@ -64,23 +70,42 @@ while True:
             
         if date.weekday() == 5 or date.weekday() == 6:
             
+            dif_percent = 70
+            dif_osc = 0.07
             actives_code = choices(code_otc)[0]
             print(f'buscando em {actives[actives_code]}')
-            print(f'green: {sum(green_analitics)}%')
-            print(f'red: {sum(red_analitics)}%')
+            
+            if len(green_analitics) > 0 and len(red_analitics) > 0:
+                print(f'green: {sum(green_analitics)}%')
+                print(f'red: {sum(red_analitics)}%')
+                print(f'oscillation_red: {round(sum(osc_red), 3)}')
+                print(f'oscillation_green: {round(sum(osc_green), 3)}')
             
         elif date.weekday() != 5 and date.weekday() != 6 and date.hour < 17:
             
+            dif_percent = 60
+            dif_osc = 0.06
             actives_code = choices(code)[0]
             print(f'buscando em {actives[actives_code]}')
-            print(f'green: {sum(green_analitics)}%')
-            print(f'red: {sum(red_analitics)}%')
+            
+            if len(green_analitics) > 0 and len(red_analitics) > 0:
+                print(f'green: {sum(green_analitics)}%')
+                print(f'red: {sum(red_analitics)}%')
+                print(f'oscillation_red: {round(sum(osc_red), 3)}')
+                print(f'oscillation_green: {round(sum(osc_green), 3)}')
             
         elif date.weekday() != 5 and date.weekday() != 6 and date.hour >= 17:
+            
+            dif_percent = 70
+            dif_osc = 0.07
             actives_code = choices(code_otc)[0]
             print(f'buscando em {actives[actives_code]}')
-            print(f'green: {sum(green_analitics)}%')
-            print(f'red: {sum(red_analitics)}%')
+            
+            if len(green_analitics) > 0 and len(red_analitics) > 0:
+                print(f'green: {sum(green_analitics)}%')
+                print(f'red: {sum(red_analitics)}%')
+                print(f'oscillation_red: {round(sum(osc_red), 3)}')
+                print(f'oscillation_green: {round(sum(osc_green), 3)}')
             
         if one_minute:
             candles = API.get_all_candles(actives[actives_code], 60, choices(one_minute_candle)[0]) # 62 velas para decisões de 5 minutos e (12, 17) velas para 1 minuto
@@ -125,12 +150,7 @@ while True:
             green_analitics = []
                 
         
-        if sum(green_analitics) > sum(red_analitics) and critical_percent > 100 and round(sum(osc_green), 3) == 0:
-            
-            print(f'venda: {sum(green_analitics)}%')
-            print(f'compra: {sum(red_analitics)}%')
-            
-            print(f'oscillation: {round(sum(osc_green), 3)}')
+        if sum(green_analitics) > sum(red_analitics) and critical_percent > dif_percent and round(sum(osc_green), 4) >= dif_osc:
             
             if one_minute:
                 if balance > value:
@@ -145,6 +165,11 @@ while True:
                 else:
                     print('saldo insuficiente')
                     exit()
+            
+            print(f'venda: {sum(green_analitics)}%')
+            print(f'compra: {sum(red_analitics)}%')
+            
+            print(f'oscillation: {round(sum(osc_green), 3)}')
                 
             print(f'venda realizada de: R$ {round(value, 2)}')
             
@@ -165,12 +190,7 @@ while True:
                     
                     print(f'total loss: {len(loss)}, - R$ {round(sum(loss_value), 2) * - 1}')
         
-        if sum(red_analitics) > sum(green_analitics) and critical_percent > 100 and round(sum(osc_red), 3) == 0:
-            
-            print(f'venda: {sum(green_analitics)}%')
-            print(f'compra: {sum(red_analitics)}%')
-            
-            print(f'oscillation: {round(sum(osc_red), 3)}')
+        if sum(red_analitics) > sum(green_analitics) and critical_percent > dif_percent and round(sum(osc_red), 4) >= dif_osc:
             
             if one_minute:
                 if balance > value:
@@ -185,6 +205,11 @@ while True:
                 else:
                     print('saldo insuficiente')
                     exit()
+            
+            print(f'venda: {sum(green_analitics)}%')
+            print(f'compra: {sum(red_analitics)}%')
+            
+            print(f'oscillation: {round(sum(osc_red), 3)}')
                 
             print(f'compra realizada de: R$ {round(value, 2)}')
             
@@ -206,6 +231,6 @@ while True:
                     print(f'total loss: {len(loss)}, -R$ {round(sum(loss_value), 2) * - 1}')
             
                             
-        API.set_time_sleep(1)
+        API.set_time_sleep(.5)
     except Exception as error:
         print(f'something wrong: {error}')
