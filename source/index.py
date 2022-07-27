@@ -18,8 +18,8 @@ green = []
 wins = []
 stop_loss = []
 
-value = 10500
-active = 'EURUSD'
+value = 6
+active = 'EURUSD-OTC'
 
 while True:
     
@@ -63,16 +63,13 @@ while True:
                         min_candle_five = candle_five['min']
                         max_candle_five = candle_five['max']
                         
-                        min_candle_fifteen = candle_fifteen['min']
-                        max_candle_fifteen = candle_fifteen['max']
-                        
                         if len(green) > len(red):
                             print('tendencia de alta')
                         
                         if len(green) < len(red):
                             print('tendencia de baixa')
                         
-                        if len(green) > len(red) and candle_five['candle'] == 'green' and candle_fifteen['candle'] == 'green' and pointer > max_candle_five and pointer > max_candle_fifteen:
+                        if len(green) > len(red) and candle_five['candle'] == 'green' and candle_fifteen['candle'] == 'green' and pointer > max_candle_five:
                             
                             if balance >= value:
                                 status, id = API.call_or_put(value, active, 'call', 1)
@@ -102,7 +99,7 @@ while True:
                                     
                                     
                         
-                        if len(green) < len(red) and candle_five['candle'] == 'red' and candle_fifteen['candle'] == 'red' and pointer < min_candle_five and pointer < min_candle_fifteen:
+                        if len(green) < len(red) and candle_five['candle'] == 'red' and candle_fifteen['candle'] == 'red' and pointer < min_candle_five:
                             
                             if balance >= value:
                                 status, id = API.call_or_put(value, active, 'put', 1)
