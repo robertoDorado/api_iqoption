@@ -1,7 +1,5 @@
 # _*_ coding: utf-8 _*_
 from iqoption.connection import BOT_IQ_Option
-from random import choices
-from datetime import datetime
 
 account_type = "PRACTICE"
 API = BOT_IQ_Option(account_type)
@@ -20,7 +18,7 @@ green = []
 wins = []
 stop_loss = []
 
-value = 10000
+value = 10500
 active = 'EURUSD'
 
 while True:
@@ -31,7 +29,8 @@ while True:
         fifteen_minutes_candle = API.get_all_candles(active, 900, 1)
         
         candle_fifteen_m = [{'candle': 'red' if i['open'] > i['close']
-        else 'green' if i['open'] < i['close'] else 'dogi', 'open': i['open'], 'close': i['close']}
+        else 'green' if i['open'] < i['close'] else 'dogi', 'open': i['open'], 'close': i['close'],
+        'max': i['max'], 'min': i['min'], 'id': i['id']}
         for i in fifteen_minutes_candle]
         
         candle_five_m = [{'candle': 'red' if i['open'] > i['close']
@@ -64,7 +63,16 @@ while True:
                         min_candle_five = candle_five['min']
                         max_candle_five = candle_five['max']
                         
-                        if len(green) > len(red) and candle_five['candle'] == 'green' and candle_fifteen['candle'] == 'green' and pointer > max_candle_five:
+                        min_candle_fifteen = candle_fifteen['min']
+                        max_candle_fifteen = candle_fifteen['max']
+                        
+                        if len(green) > len(red):
+                            print('tendencia de alta')
+                        
+                        if len(green) < len(red):
+                            print('tendencia de baixa')
+                        
+                        if len(green) > len(red) and candle_five['candle'] == 'green' and candle_fifteen['candle'] == 'green' and pointer > max_candle_five and pointer > max_candle_fifteen:
                             
                             if balance >= value:
                                 status, id = API.call_or_put(value, active, 'call', 1)
@@ -79,8 +87,11 @@ while True:
                                 
                                 if status == 'win':
                                     wins.append(status)
-                                    
                                     print(f'total wins: {len(wins)}')
+                                    
+                                    if len(wins) == 2:
+                                        print('meta batida')
+                                        exit()
                                 else:
                                     stop_loss.append(status)
                                     print(f'total loss: {len(stop_loss)}')
@@ -91,7 +102,7 @@ while True:
                                     
                                     
                         
-                        if len(green) < len(red) and candle_five['candle'] == 'red' and candle_fifteen['candle'] == 'red' and pointer < min_candle_five:
+                        if len(green) < len(red) and candle_five['candle'] == 'red' and candle_fifteen['candle'] == 'red' and pointer < min_candle_five and pointer < min_candle_fifteen:
                             
                             if balance >= value:
                                 status, id = API.call_or_put(value, active, 'put', 1)
@@ -107,6 +118,10 @@ while True:
                                 if status == 'win':
                                     wins.append(status)
                                     print(f'total wins: {len(wins)}')
+                                    
+                                    if len(wins) == 2:
+                                        print('meta batida')
+                                        exit()
                                 else:
                                     stop_loss.append(status)
                                     print(f'total loss: {len(stop_loss)}')
