@@ -12,6 +12,7 @@ if API.check_my_connection() == False:
 
 balance = API.balance(account_type)
 print(f'my account is {account_type}: R$ {balance}')
+print(f'aguardando rompimento')
 
 red = []
 green = []
@@ -20,7 +21,7 @@ wins = []
 stop_loss = []
 
 value = 10000
-active = 'EURUSD-OTC'
+active = 'EURUSD'
 
 while True:
     
@@ -38,9 +39,9 @@ while True:
         'max': i['max'], 'min': i['min'], 'id': i['id']}
         for i in five_minutes_candle]
         
-        tl_five = API.get_all_candles(active, 300, 50)
+        tl_five_m = API.get_all_candles(active, 300, 51)
         scan_tl = [{'candle': 'red' if i['open'] > i['close']
-        else 'green' if i['open'] < i['close'] else 'dogi'} for i in tl_five]
+        else 'green' if i['open'] < i['close'] else 'dogi'} for i in tl_five_m]
         
         ticks = API.get_ticks_real_time(active, 300, 1)
         
