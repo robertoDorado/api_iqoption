@@ -109,6 +109,12 @@ while True:
                                 wins.append(status)
                                 print(f'total wins: {len(wins)}')
                                 
+                                API.set_time_sleep(300)
+                                
+                                # Região do pullback em tendencia de baixa
+                                if candle_five['candle'] == 'green' and len(wins) == 1:
+                                    pullback_up = True
+                                
                                 if len(wins) == 2:
                                     print('meta batida')
                                     exit()
@@ -139,6 +145,12 @@ while True:
                             if status == 'win':
                                 wins.append(status)
                                 print(f'total wins: {len(wins)}')
+                                
+                                API.set_time_sleep(300)
+                                
+                                # Região do pullback em tendencia de alta
+                                if candle_five['candle'] == 'red' and len(wins) == 1:
+                                    pullback_down = True
                                 
                                 if len(wins) == 2:
                                     print('meta batida')
