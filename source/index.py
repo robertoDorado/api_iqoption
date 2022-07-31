@@ -21,8 +21,11 @@ stop_loss = []
 value = 10000
 active = 'AUDCAD-OTC'
 
-valid_red_candle = ['red', 'red', 'red', 'red']
-valid_green_candle = ['green', 'green', 'green', 'green']
+valid_four_red_candle = ['red', 'red', 'red', 'red']
+valid_four_green_candle = ['green', 'green', 'green', 'green']
+
+valid_five_red_candle = ['red', 'red', 'red', 'red', 'red']
+valid_five_green_candle = ['green', 'green', 'green', 'green', 'green']
 
 total_candles_tendence_line = 50
 total_candles_in_array = 4
@@ -86,7 +89,7 @@ while True:
             index_current_element = len(verify_candles) - 1
             current_five_m_candle = verify_candles[index_current_element]
             
-            if low_tendencie == True and np.array_equal(valid_red_candle, verify_candles) == True and current_five_m_candle == 'red' and candle_fifteen['candle'] == 'red':
+            if low_tendencie == True and np.array_equal(valid_four_red_candle, verify_candles) == True or np.array_equal(valid_five_red_candle, verify_candles) == True and current_five_m_candle == 'red' and candle_fifteen == 'red':
                 
                 if balance >= value:
                     status, id = API.call_or_put(value, active, 'put', 1)
@@ -114,7 +117,7 @@ while True:
                             print('stop loss acionado')
                             exit()
                             
-            if height_tendencie == True and np.array_equal(valid_green_candle, verify_candles) == True and current_five_m_candle == 'green' and candle_fifteen['candle'] == 'green':
+            if height_tendencie == True and np.array_equal(valid_four_green_candle, verify_candles) == True or np.array_equal(valid_five_green_candle, verify_candles) == True and current_five_m_candle == 'green' and candle_fifteen == 'green':
                 
                 if balance >= value:
                     status, id = API.call_or_put(value, active, 'call', 1)
