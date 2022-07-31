@@ -105,3 +105,9 @@ class BOT_IQ_Option:
     def balance(self, type_balance):
         self.instance.change_balance(type_balance)
         return self.instance.get_balance()
+    
+    def get_realtime_candles(self, active, size, maxdict):
+        self.instance.start_candles_stream(active, size, maxdict)
+        candles = self.instance.get_realtime_candles(active, size)
+        self.instance.stop_candles_stream(active, size)
+        return candles
