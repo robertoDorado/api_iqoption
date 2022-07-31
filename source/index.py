@@ -21,14 +21,7 @@ stop_loss = []
 value = 10000
 active = 'EURUSD-OTC'
 
-valid_four_red_candle = ['red', 'red', 'red', 'red']
-valid_four_green_candle = ['green', 'green', 'green', 'green']
-
-valid_five_red_candle = ['red', 'red', 'red', 'red', 'red']
-valid_five_green_candle = ['green', 'green', 'green', 'green', 'green']
-
-total_candles_tendence_line = 50
-total_candles_in_array = 4
+total_candles = 50
 
 height_tendencie = False
 low_tendencie = False
@@ -38,20 +31,23 @@ while True:
     
     try:
         
-        market_tendencie = API.get_all_candles(active, 300, total_candles_tendence_line)
-        historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_in_array)
+        historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
         historic_fifteen_minutes = API.get_all_candles(active, 900, 1)
         
-        market_tendencie = ['red' if i['open'] > i['close']
-        else 'green' if i['close'] > i['open'] else 'dogi'
-        for i in market_tendencie]
+        historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
+        else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+        'ask': historic_five_minutes[i]['ask'] if 'ask' in historic_five_minutes[i] else NULL,
+        'bid': historic_five_minutes[i]['bid'] if 'bid' in historic_five_minutes[i] else NULL,
+        'close': historic_five_minutes[i]['close']}
+        for i in historic_five_minutes]
         
-        historic_fifteen_minutes = ['red' if i['open'] > i['close']
-        else 'green' if i['close'] > i['open'] else 'dogi'
-        for i in historic_fifteen_minutes]
+        current_reference_index = len(historic_five_minutes) - 1
+        current_reference = historic_five_minutes[current_reference_index]
         
-        red = [i for i in market_tendencie if 'red' in i]
-        green = [i for i in market_tendencie if 'green' in i]
+        all_candles_five_m = [i['candle'] for i in historic_five_minutes]
+        
+        red = [i['candle'] for i in historic_five_minutes if i['candle'] == 'red']
+        green = [i['candle'] for i in historic_five_minutes if i['candle'] == 'green']
         
         if len(red) > len(green):
             height_tendencie = False
@@ -73,13 +69,8 @@ while True:
             consolidated_market = True
             print(f'red: {len(red)}')
             print(f'green: {len(green)}')
-        
-        
-        verify_candles = ['red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-        else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi'
-        for i in historic_five_minutes]
-        
-        
+            
+            
         if height_tendencie:
             print('tendencia de alta')
         
@@ -88,14 +79,18 @@ while True:
         
         if consolidated_market:
             print('tendencia consolidada')
-        
-        
-        for candle_fifteen in historic_fifteen_minutes:
             
-            index_current_element = len(verify_candles) - 1
-            current_five_m_candle = verify_candles[index_current_element]
-            
-            if low_tendencie == True and np.array_equal(valid_four_red_candle, verify_candles) == True or np.array_equal(valid_five_red_candle, verify_candles) == True and current_five_m_candle == 'red' and candle_fifteen == 'red':
+        first_index = len(all_candles_five_m) - 1
+        second_index = len(all_candles_five_m) - 2
+        third_index = len(all_candles_five_m) - 3
+        fourth_index = len(all_candles_five_m) - 4
+        
+        candle_fifteen_m = [{'candle': 'red' if i['open'] > i['close'] else 'green' if i['close'] > i['open'] else 'dogi'
+        for i in historic_fifteen_minutes}]
+        
+        candle_fifteen_m = [i['candle'] for i in candle_fifteen_m]
+        
+        if low_tendencie and all_candles_five_m[first_index] == 'red' and all_candles_five_m[second_index] == 'red' and all_candles_five_m[third_index] == 'red' and all_candles_five_m[fourth_index] == 'red' and candle_fifteen_m[0] == 'red' and current_reference['close'] < current_reference['bid']:
                 
                 if balance >= value:
                     status, id = API.call_or_put(value, active, 'put', 1)
@@ -122,8 +117,9 @@ while True:
                         if len(stop_loss) == 1:
                             print('stop loss acionado')
                             exit()
-                            
-            if height_tendencie == True and np.array_equal(valid_four_green_candle, verify_candles) == True or np.array_equal(valid_five_green_candle, verify_candles) == True and current_five_m_candle == 'green' and candle_fifteen == 'green':
+        
+        
+        if height_tendencie and all_candles_five_m[first_index] == 'green' and all_candles_five_m[second_index] == 'green' and all_candles_five_m[third_index] == 'green' and all_candles_five_m[fourth_index] == 'green' and candle_fifteen_m[0] == 'green' and current_reference['close'] > current_reference['ask']:
                 
                 if balance >= value:
                     status, id = API.call_or_put(value, active, 'call', 1)
