@@ -19,7 +19,7 @@ wins = []
 stop_loss = []
 
 value = 10000
-active = 'AUDCAD-OTC'
+active = 'EURUSD-OTC'
 
 valid_four_red_candle = ['red', 'red', 'red', 'red']
 valid_four_green_candle = ['green', 'green', 'green', 'green']
@@ -57,16 +57,22 @@ while True:
             height_tendencie = False
             low_tendencie = True
             consolidated_market = False
+            print(f'red: {len(red)}')
+            print(f'green: {len(green)}')
             
         if len(red) < len(green):
             height_tendencie = True
             low_tendencie = False
             consolidated_market = False
+            print(f'red: {len(red)}')
+            print(f'green: {len(green)}')
 
         if len(red) == len(green):
             height_tendencie = False
             low_tendencie = False
             consolidated_market = True
+            print(f'red: {len(red)}')
+            print(f'green: {len(green)}')
         
         
         verify_candles = ['red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
