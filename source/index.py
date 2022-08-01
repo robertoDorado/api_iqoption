@@ -25,6 +25,9 @@ height_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
+otc = True
+mkt = False
+
 seconds = 0
 
 print(f'my account is {account_type}: R$ {balance}, no ativo {active}')
@@ -39,6 +42,13 @@ while True:
         if seconds == 3600:
             seconds = 0
             active_index += 1
+            
+            if otc and active_index > 80:
+                active_index = 76
+                
+            if mkt and active_index > 4:
+                active_index = 1
+                
             active = API.get_all_actives()[active_index]
             print(f'mudando para o ativo {active}')
         
