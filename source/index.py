@@ -1,9 +1,8 @@
 # _*_ coding: utf-8 _*_
 from asyncio.windows_events import NULL
 from iqoption.connection import BOT_IQ_Option
-import numpy as np
 
-account_type = "PRACTICE"
+account_type = "REAL"
 API = BOT_IQ_Option(account_type)
 
 if API.check_my_connection() == False:
@@ -12,14 +11,13 @@ if API.check_my_connection() == False:
 
 instance = API.get_instance()
 balance = API.balance(account_type)
-print(f'my account is {account_type}: R$ {balance}')
-print('iniciando algoritimo')
 
 wins = []
 stop_loss = []
 
-value = 10000
-active = 'EURUSD-OTC'
+value = 7.25
+active_index = 76
+active = API.get_all_actives()[active_index]
 
 total_candles = 50
 
@@ -27,24 +25,40 @@ height_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
+seconds = 0
+
+print(f'my account is {account_type}: R$ {balance}, no ativo {active}')
+print('iniciando algoritimo')
+
 while True:
     
     try:
+        
+        seconds += 1 
+        
+        if seconds == 3600:
+            seconds = 0
+            active_index += 1
+            active = API.get_all_actives()[active_index]
+            print(f'mudando para o ativo {active}')
         
         historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
         historic_fifteen_minutes = API.get_all_candles(active, 900, 1)
         
         historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
         else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-        'ask': historic_five_minutes[i]['ask'] if 'ask' in historic_five_minutes[i] else NULL,
-        'bid': historic_five_minutes[i]['bid'] if 'bid' in historic_five_minutes[i] else NULL,
+        'max': historic_five_minutes[i]['max'] if 'max' in historic_five_minutes[i] else NULL,
+        'min': historic_five_minutes[i]['min'] if 'min' in historic_five_minutes[i] else NULL,
         'close': historic_five_minutes[i]['close']}
         for i in historic_five_minutes]
         
-        current_reference_index = len(historic_five_minutes) - 1
-        current_reference = historic_five_minutes[current_reference_index]
+        # current_reference_index = len(historic_five_minutes) - 1
+        # current_reference = historic_five_minutes[current_reference_index]
         
         all_candles_five_m = [i['candle'] for i in historic_five_minutes]
+        all_candle_max_five_m = [i['max'] for i in historic_five_minutes]
+        all_candle_min_five_m = [i['min'] for i in historic_five_minutes]
+        all_candle_close_five_m = [i['close'] for i in historic_five_minutes]
         
         red = [i['candle'] for i in historic_five_minutes if i['candle'] == 'red']
         green = [i['candle'] for i in historic_five_minutes if i['candle'] == 'green']
@@ -80,17 +94,28 @@ while True:
         if consolidated_market:
             print('tendencia consolidada')
             
-        first_index = len(all_candles_five_m) - 1
-        second_index = len(all_candles_five_m) - 2
-        third_index = len(all_candles_five_m) - 3
-        fourth_index = len(all_candles_five_m) - 4
+        first_candle_index_five_m = len(all_candles_five_m) - 1
         
-        candle_fifteen_m = [{'candle': 'red' if i['open'] > i['close'] else 'green' if i['close'] > i['open'] else 'dogi'
-        for i in historic_fifteen_minutes}]
+        second_candle_index_five_m = len(all_candles_five_m) - 2
+        second_max_candle_index = len(all_candle_max_five_m) - 2
+        second_min_candle_index = len(all_candle_min_five_m) - 2
+        second_close_candle_index = len(all_candle_close_five_m) - 2
         
-        candle_fifteen_m = [i['candle'] for i in candle_fifteen_m]
+        # print(f'first candle color: {all_candles_five_m[first_candle_index_five_m]}')
+        # print(f'second candle color: {all_candles_five_m[second_candle_index_five_m]}')
+        # print('\n')
+        # print(f'second max candle: {all_candle_max_five_m[second_max_candle_index]}')
+        # print(f'second min candle: {all_candle_min_five_m[second_min_candle_index]}')
+        # print('\n')
+        # print(f'second close five minutes: {all_candle_close_five_m[second_close_candle_index]}')
         
-        if low_tendencie and all_candles_five_m[first_index] == 'red' and all_candles_five_m[second_index] == 'red' and all_candles_five_m[third_index] == 'red' and all_candles_five_m[fourth_index] == 'red' and candle_fifteen_m[0] == 'red' and current_reference['close'] < current_reference['bid']:
+        
+        candle_fifteen_m = [{'candle': 'red' if i['open'] > i['close'] else 'green' if i['close'] > i['open'] else 'dogi',
+        'max': i['max'], 'min':i['min'], 'close': i['close']} for i in historic_fifteen_minutes]
+        
+        candle_color_fifteen_m = [i['candle'] for i in candle_fifteen_m]
+        
+        if low_tendencie and all_candles_five_m[first_candle_index_five_m] == 'red' and all_candles_five_m[second_candle_index_five_m] == 'red' and candle_color_fifteen_m[0] == 'red' and all_candle_close_five_m[second_close_candle_index] < all_candle_min_five_m[second_min_candle_index]:
                 
                 if balance >= value:
                     status, id = API.call_or_put(value, active, 'put', 1)
@@ -119,7 +144,7 @@ while True:
                             exit()
         
         
-        if height_tendencie and all_candles_five_m[first_index] == 'green' and all_candles_five_m[second_index] == 'green' and all_candles_five_m[third_index] == 'green' and all_candles_five_m[fourth_index] == 'green' and candle_fifteen_m[0] == 'green' and current_reference['close'] > current_reference['ask']:
+        if height_tendencie and all_candles_five_m[first_candle_index_five_m] == 'green' and all_candles_five_m[second_candle_index_five_m] == 'green' and candle_color_fifteen_m[0] == 'green' and all_candle_close_five_m[second_close_candle_index] > all_candle_max_five_m[second_max_candle_index]:
                 
                 if balance >= value:
                     status, id = API.call_or_put(value, active, 'call', 1)
