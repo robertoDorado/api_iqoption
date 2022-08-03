@@ -16,7 +16,7 @@ wins = []
 stop_loss = []
 
 value = 10000
-active_index = 2
+active_index = 1
 active = API.get_all_actives()[active_index]
 
 total_candles = 80
@@ -29,6 +29,7 @@ otc = False
 mkt = True
 
 seconds = 0
+decimal = 5
 
 print(f'my account is {account_type}: R$ {balance}, no ativo {active}')
 print('iniciando algoritimo')
@@ -59,7 +60,7 @@ while True:
                 historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
                 print(f'mudando para o ativo {active}')
         
-        if seconds == 300:
+        if seconds == 60:
             
             seconds = 0
             active_index += 1
@@ -134,7 +135,7 @@ while True:
             print('tendencia consolidada')
             
         
-        if all_candle_close_five_m[first_candle_index] == s1[0] or all_candle_close_five_m[first_candle_index] == s2[0] or all_candle_close_five_m[first_candle_index] == s3[0]:
+        if round(all_candle_close_five_m[first_candle_index], decimal) == round(s1[0], decimal) or round(all_candle_close_five_m[first_candle_index], decimal) == round(s2[0], decimal) or round(all_candle_close_five_m[first_candle_index], decimal) == round(s3[0], decimal):
                 
                 if balance >= value:
                     status, id = API.call_or_put(value, active, 'call', 1)
@@ -175,7 +176,7 @@ while True:
                             print('stop loss acionado')
                             exit()
                             
-        if all_candle_close_five_m[first_candle_index] == r1[0] or all_candle_close_five_m[first_candle_index] == r2[0] or all_candle_close_five_m[first_candle_index] == r3[0]:
+        if round(all_candle_close_five_m[first_candle_index], decimal) == round(r1[0], decimal) or round(all_candle_close_five_m[first_candle_index], decimal) == round(r2[0], decimal) or round(all_candle_close_five_m[first_candle_index], decimal) == round(r3[0], decimal):
                 
                 if balance >= value:
                     status, id = API.call_or_put(value, active, 'put', 1)
