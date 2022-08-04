@@ -60,7 +60,7 @@ while True:
                 historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
                 print(f'mudando para o ativo {active}')
         
-        if seconds == 60:
+        if seconds == 300:
             
             seconds = 0
             active_index += 1
@@ -97,8 +97,10 @@ while True:
         for i in historic_five_minutes]
         
         all_candle_close_five_m = [i['close'] for i in historic_five_minutes]
+        all_candle_color_five_m = [i['candle'] for i in historic_five_minutes]
         
         first_candle_index = len(all_candle_close_five_m) - 1
+        second_candle_index = len(all_candle_close_five_m) - 2
         
         red = [i['candle'] for i in historic_five_minutes if i['candle'] == 'red']
         green = [i['candle'] for i in historic_five_minutes if i['candle'] == 'green']
@@ -218,7 +220,7 @@ while True:
                             exit()
 
         
-        if low_tendencie == True and all_candle_close_five_m[first_candle_index] < s1[0] or all_candle_close_five_m[first_candle_index] < s2[0] or all_candle_close_five_m[first_candle_index] < s3[0]:
+        if low_tendencie == True and all_candle_close_five_m[second_candle_index] < s1[0] or all_candle_close_five_m[second_candle_index] < s2[0] or all_candle_close_five_m[second_candle_index] < s3[0] and all_candle_color_five_m[first_candle_index] == 'red':
                 
                 if balance >= value:
                     status, id = API.call_or_put(value, active, 'put', 1)
@@ -260,7 +262,7 @@ while True:
                             exit()
         
         
-        if height_tendencie == True and all_candle_close_five_m[first_candle_index] > r1[0] or all_candle_close_five_m[first_candle_index] > r2[0] or all_candle_close_five_m[first_candle_index] > r3[0]:
+        if height_tendencie == True and all_candle_close_five_m[second_candle_index] > r1[0] or all_candle_close_five_m[second_candle_index] > r2[0] or all_candle_close_five_m[second_candle_index] > r3[0] and all_candle_color_five_m[first_candle_index] == 'green':
                 
                 if balance >= value:
                     status, id = API.call_or_put(value, active, 'call', 1)
