@@ -152,24 +152,8 @@ class BOT_IQ_Option:
             if status == 'win':
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
+                return True
                 
-                active_index += 1
-                
-                if otc and active_index > 80:
-                    active_index = 76
-                    
-                if mkt and active_index > 4:
-                    active_index = 1
-                    
-                active = self.get_all_actives()[active_index]
-                self.instance.get_technical_indicators(active)
-                self.get_realtime_candles(active, 300, total_candles)
-                print(f'mudando para o ativo {active}')
-                
-                # if len(wins) == 2:
-                #     print('meta batida')
-                #     exit()
-                return active
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
