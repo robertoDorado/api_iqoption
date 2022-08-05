@@ -111,3 +111,72 @@ class BOT_IQ_Option:
         candles = self.instance.get_realtime_candles(active, size)
         self.instance.stop_candles_stream(active, size)
         return candles
+    
+    def call_decision(self, balance, value, active, wins=[], total_candles=0, stop_loss=[], otc=False, mkt=True, active_index=1):
+        if balance >= value:
+            status, id = self.call_or_put(value, active, 'call', 1)
+        else:
+            print('saldo insuficiente')
+            exit()
+        
+        print(f'compra: {value}')
+        
+        if status:
+            status, check_value = self.check_win_or_loss(id, 'v4')
+            
+            if status == 'win':
+                wins.append(status)
+                print(f'total wins: {len(wins)}')
+                return True
+                
+            else:
+                stop_loss.append(status)
+                print(f'total loss: {len(stop_loss)}')
+                
+                if len(stop_loss) == 1:
+                    print('stop loss acionado')
+                    exit()
+                    
+    def put_decision(self, balance, value, active, wins=[], total_candles=0, stop_loss=[], otc=False, mkt=True, active_index=1):
+        if balance >= value:
+            status, id = self.call_or_put(value, active, 'put', 1)
+        else:
+            print('saldo insuficiente')
+            exit()
+        
+        print(f'venda: {value}')
+        
+        if status:
+            status, check_value = self.check_win_or_loss(id, 'v4')
+            
+            if status == 'win':
+                wins.append(status)
+                print(f'total wins: {len(wins)}')
+                
+                active_index += 1
+                
+                if otc and active_index > 80:
+                    active_index = 76
+                    
+                if mkt and active_index > 4:
+                    active_index = 1
+                    
+                active = self.get_all_actives()[active_index]
+                self.instance.get_technical_indicators(active)
+                self.get_realtime_candles(active, 300, total_candles)
+                print(f'mudando para o ativo {active}')
+                
+                # if len(wins) == 2:
+                #     print('meta batida')
+                #     exit()
+                return active
+            else:
+                stop_loss.append(status)
+                print(f'total loss: {len(stop_loss)}')
+                
+                if len(stop_loss) == 1:
+                    print('stop loss acionado')
+                    exit()
+    
+    def closest(self, lst, K): 
+        return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
