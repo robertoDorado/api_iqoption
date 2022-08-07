@@ -589,7 +589,7 @@ while True:
         if mkt == True and otc == False:
             if round(all_candle_close_five_m[first_candle_index], decimal) == round(s1[0], decimal) or round(all_candle_close_five_m[first_candle_index], decimal) == round(s2[0], decimal) or round(all_candle_close_five_m[first_candle_index], decimal) == round(s3[0], decimal):
                 print('igualou ao suporte')
-                win = API.call_decision(balance, value, active, wins, total_candles, stop_loss, otc, mkt, active_index)
+                win = API.call_decision(balance, value, active, wins, stop_loss)
                 
                 if win == True:
                     active_index += 1
@@ -610,7 +610,7 @@ while True:
                             
             if round(all_candle_close_five_m[first_candle_index], decimal) == round(r1[0], decimal) or round(all_candle_close_five_m[first_candle_index], decimal) == round(r2[0], decimal) or round(all_candle_close_five_m[first_candle_index], decimal) == round(r3[0], decimal):
                 print('igualou a resistencia')
-                win = API.put_decision(balance, value, active, wins, total_candles, stop_loss, otc, mkt, active_index)
+                win = API.put_decision(balance, value, active, wins, stop_loss)
                 
                 if win == True:
                     active_index += 1
@@ -631,7 +631,7 @@ while True:
             # Tomada de decisão referente aos rompimentos
             if start and all_candle_close_five_m[second_candle_index] < s1[0] or all_candle_close_five_m[second_candle_index] < s2[0] or all_candle_close_five_m[second_candle_index] < s3[0] and start:
                 print('rompeu em baixa')
-                win = API.put_decision(balance, value, active, wins, total_candles, stop_loss, otc, mkt, active_index)
+                win = API.put_decision(balance, value, active, wins, stop_loss)
                 
                 if win == True:
                     active_index += 1
@@ -650,7 +650,7 @@ while True:
             
             if high_tendencie == True and start and all_candle_close_five_m[second_candle_index] > r1[0] or all_candle_close_five_m[second_candle_index] > r2[0] or all_candle_close_five_m[second_candle_index] > r3[0]:
                 print('rompeu em alta')
-                win = API.call_decision(balance, value, active, wins, total_candles, stop_loss, otc, mkt, active_index)
+                win = API.call_decision(balance, value, active, wins, stop_loss)
                 
                 if win == True:
                     active_index += 1
