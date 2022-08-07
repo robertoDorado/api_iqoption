@@ -112,9 +112,9 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
     
-    def call_decision(self, balance, value, active, wins=[], total_candles=0, stop_loss=[], otc=False, mkt=True, active_index=1):
+    def call_decision(self, balance, value, active, wins=[], stop_loss=[]):
         if balance >= value:
-            status, id = self.call_or_put(value, active, 'call', 1)
+            status, id = self.call_or_put(value, active, 'call', 5)
         else:
             print('saldo insuficiente')
             exit()
@@ -127,6 +127,10 @@ class BOT_IQ_Option:
             if status == 'win':
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
+                
+                if len(wins) == 2:
+                    print('meta batida')
+                    
                 return True
                 
             else:
@@ -137,9 +141,9 @@ class BOT_IQ_Option:
                     print('stop loss acionado')
                     exit()
                     
-    def put_decision(self, balance, value, active, wins=[], total_candles=0, stop_loss=[], otc=False, mkt=True, active_index=1):
+    def put_decision(self, balance, value, active, wins=[], stop_loss=[]):
         if balance >= value:
-            status, id = self.call_or_put(value, active, 'put', 1)
+            status, id = self.call_or_put(value, active, 'put', 5)
         else:
             print('saldo insuficiente')
             exit()
@@ -152,6 +156,10 @@ class BOT_IQ_Option:
             if status == 'win':
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
+                
+                if len(wins) == 2:
+                    print('meta batida')
+                    
                 return True
                 
             else:
