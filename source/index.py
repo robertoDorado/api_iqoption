@@ -37,6 +37,7 @@ active = API.get_all_actives()[active_index]
 
 seconds = 0
 decimal = 5
+mkt_diff = 0
 
 total_candles_df = total_candles
 new_candle = []
@@ -133,16 +134,31 @@ while True:
             high_tendencie = False
             low_tendencie = True
             consolidated_market = False
+            mkt_diff = len(red) - len(green)
 
         if len(red) < len(green):
             high_tendencie = True
             low_tendencie = False
             consolidated_market = False
+            mkt_diff = len(green) - len(red)
 
         if len(red) == len(green):
             high_tendencie = False
             low_tendencie = False
             consolidated_market = True
+            
+        
+        if consolidated_market:
+            active_index += 1
+            active = API.get_all_actives()[active_index]
+            historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
+            print(f'mercado consolidado, mudando para o ativo {active}')
+        
+        if mkt_diff == 2 or mkt_diff == 3:
+            active_index += 1
+            active = API.get_all_actives()[active_index]
+            historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
+            print(f'mercado consolidado, mudando para o ativo {active}')
 
         # tomada de decisão em padrões de velas
         if low_tendencie and start and bullish_engulfing['result'][second_candle_index] == True:
