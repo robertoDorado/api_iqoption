@@ -163,6 +163,10 @@ while True:
         
         if mkt_diff == 2 or mkt_diff == 3:
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
+                
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mercado consolidado, mudando para o ativo {active}')
