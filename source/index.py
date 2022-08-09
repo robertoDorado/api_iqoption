@@ -5,7 +5,7 @@ from candlestick import candlestick
 import pandas as pd
 from datetime import datetime
 
-account_type = "PRACTICE"
+account_type = "REAL"
 API = BOT_IQ_Option(account_type)
 
 if API.check_my_connection() == False:
@@ -25,8 +25,8 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = True
-mkt = False
+otc = False
+mkt = True
 
 if otc:
     active_index = 76
