@@ -61,6 +61,9 @@ while True:
 
             seconds = 0
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
 
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
@@ -150,6 +153,10 @@ while True:
         
         if consolidated_market:
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
+                
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mercado consolidado, mudando para o ativo {active}')
@@ -166,6 +173,10 @@ while True:
             API.call_decision(balance, value, active, wins, stop_loss)
 
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
+              
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mudando para o ativo {active}')
@@ -175,6 +186,9 @@ while True:
             API.call_decision(balance, value, active, wins, stop_loss)
 
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
 
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
@@ -185,6 +199,9 @@ while True:
             API.call_decision(balance, value, active, wins, stop_loss)
 
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
 
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
@@ -195,6 +212,9 @@ while True:
             API.call_decision(balance, value, active, wins, stop_loss)
 
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
 
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
@@ -205,6 +225,9 @@ while True:
             API.call_decision(balance, value, active, wins, stop_loss)
 
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
 
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
@@ -215,6 +238,9 @@ while True:
             API.put_decision(balance, value, active, wins, stop_loss)
 
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
 
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
@@ -225,6 +251,9 @@ while True:
             API.put_decision(balance, value, active, wins, stop_loss)
 
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
 
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
@@ -235,6 +264,9 @@ while True:
             API.put_decision(balance, value, active, wins, stop_loss)
 
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
 
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
@@ -245,6 +277,9 @@ while True:
             API.put_decision(balance, value, active, wins, stop_loss)
 
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
 
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
@@ -255,6 +290,9 @@ while True:
             API.put_decision(balance, value, active, wins, stop_loss)
 
             active_index += 1
+            
+            if mkt and active_index > 6:
+                active_index = 1
 
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
