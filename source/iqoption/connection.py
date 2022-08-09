@@ -135,7 +135,7 @@ class BOT_IQ_Option:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 
-                if len(stop_loss) == 5:
+                if len(stop_loss) == 2:
                     print('stop loss acionado')
                     exit()
                     
@@ -162,7 +162,7 @@ class BOT_IQ_Option:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 
-                if len(stop_loss) == 5:
+                if len(stop_loss) == 2:
                     print('stop loss acionado')
                     exit()
     
