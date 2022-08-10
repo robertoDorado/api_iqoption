@@ -128,14 +128,15 @@ class BOT_IQ_Option:
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
                 
-                # if len(wins) == 2:
-                #     print('meta batida')
+                if len(wins) == 2:
+                    print('meta batida')
+                    exit()
                 
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 
-                if len(stop_loss) == 2:
+                if len(stop_loss) == 1:
                     print('stop loss acionado')
                     exit()
                     
@@ -155,14 +156,15 @@ class BOT_IQ_Option:
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
                 
-                # if len(wins) == 2:
-                #     print('meta batida')
+                if len(wins) == 2:
+                    print('meta batida')
+                    exit()
                 
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 
-                if len(stop_loss) == 2:
+                if len(stop_loss) == 1:
                     print('stop loss acionado')
                     exit()
     
