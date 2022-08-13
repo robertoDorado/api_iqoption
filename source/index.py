@@ -213,7 +213,7 @@ while True:
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mudando o ativo para {active}')
 
-        if low_tendencie and start and hammer['result'][second_candle_index] == True:
+        if low_tendencie and start and hammer['result'][second_candle_index] and all_candle_color_five_m[third_candle_index] == 'red':
             print('martelo')
             API.call_decision(balance, value, active, wins, stop_loss)
             active_index += 1
@@ -228,7 +228,7 @@ while True:
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mudando o ativo para {active}')
 
-        if low_tendencie and start and inverted_hammer['result'][second_candle_index] == True:
+        if low_tendencie and start and inverted_hammer['result'][second_candle_index] and all_candle_color_five_m[third_candle_index] == 'red':
             print('martelo invertido')
             API.call_decision(balance, value, active, wins, stop_loss)
             active_index += 1
@@ -288,7 +288,7 @@ while True:
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mudando o ativo para {active}')
 
-        if high_tendencie and start and shooting_star['result'][second_candle_index] == True:
+        if high_tendencie and start and shooting_star['result'][second_candle_index] and all_candle_color_five_m[third_candle_index] == 'green':
             print('estrela cadente')
             API.put_decision(balance, value, active, wins, stop_loss)
             active_index += 1
@@ -303,7 +303,7 @@ while True:
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mudando o ativo para {active}')
 
-        if high_tendencie and start and hanging_man['result'][second_candle_index] == True:
+        if high_tendencie and start and hanging_man['result'][second_candle_index] and all_candle_color_five_m[third_candle_index] == 'green':
             print('enforcado')
             API.put_decision(balance, value, active, wins, stop_loss)
             active_index += 1
