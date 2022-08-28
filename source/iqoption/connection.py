@@ -3,6 +3,7 @@ from iqoptionapi.stable_api import IQ_Option
 import time
 from datetime import datetime
 from pytz import timezone
+from iqoptionapi.expiration import get_expiration_time
 
 class BOT_IQ_Option:
     
@@ -121,6 +122,34 @@ class BOT_IQ_Option:
         
         print(f'compra: {value}')
         
+        for _ in range(100000000000000):
+            
+            exp = self.get_time_exp()
+            exp_second = exp.second
+            exp_minute = exp.minute
+            exp_hour = exp.hour
+            
+            # if exp_second == 0:
+            #     exp_second = 59
+            
+            # second += 1
+            
+            # if second > 59:
+            #     minute += 1
+            #     second = 0
+                
+            # if minute > 59:
+            #     minute = 0
+            #     hour += 1
+            
+            # if hour > 23:
+            #     hour = 0
+            #     minute = 0
+            #     second = 0
+            
+            print(f'{exp_hour}:{exp_minute}:{exp_second}')
+            self.set_time_sleep(1)
+        
         if status:
             status, check_value = self.check_win_or_loss(id, 'v4')
             
@@ -149,6 +178,34 @@ class BOT_IQ_Option:
         
         print(f'venda: {value}')
         
+        for _ in range(100000000000000):
+            
+            exp = self.get_time_exp()
+            exp_second = exp.second
+            exp_minute = exp.minute
+            exp_hour = exp.hour
+            
+            # if exp_second == 0:
+            #     exp_second = 59
+            
+            # second += 1
+            
+            # if second > 59:
+            #     minute += 1
+            #     second = 0
+                
+            # if minute > 59:
+            #     minute = 0
+            #     hour += 1
+            
+            # if hour > 23:
+            #     hour = 0
+            #     minute = 0
+            #     second = 0
+            
+            print(f'{exp_hour}:{exp_minute}:{exp_second}')
+            self.set_time_sleep(1)
+        
         if status:
             status, check_value = self.check_win_or_loss(id, 'v4')
             
@@ -170,3 +227,8 @@ class BOT_IQ_Option:
     
     def closest(self, lst, K): 
         return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
+    
+    def get_time_exp(self):
+        timestamp = self.instance.get_server_timestamp()
+        exp, _ = get_expiration_time(timestamp, 1)
+        return datetime.fromtimestamp(exp)
