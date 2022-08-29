@@ -1,9 +1,10 @@
 from asyncio.windows_events import NULL
+from multiprocessing.resource_sharer import stop
+import string
 from iqoptionapi.stable_api import IQ_Option
 import time
 from datetime import datetime
 from pytz import timezone
-from iqoptionapi.expiration import get_expiration_time
 
 class BOT_IQ_Option:
     
@@ -113,7 +114,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
     
-    def call_decision(self, balance, value, active, wins=[], stop_loss=[]):
+    def call_decision(self, balance, value, active, wins=[], stop_loss=[], candle_close=''):
         if balance >= value:
             status, id = self.call_or_put(value, active, 'call', 1)
         else:
@@ -121,33 +122,15 @@ class BOT_IQ_Option:
             exit()
         
         print(f'compra: {value}')
-        
-        for _ in range(100000000000000):
+        ticks = self.get_ticks_real_time(active, 300, 1)
             
-            exp = self.get_time_exp()
-            exp_second = exp.second
-            exp_minute = exp.minute
-            exp_hour = exp.hour
-            
-            # if exp_second == 0:
-            #     exp_second = 59
-            
-            # second += 1
-            
-            # if second > 59:
-            #     minute += 1
-            #     second = 0
+        for tick in ticks:
                 
-            # if minute > 59:
-            #     minute = 0
-            #     hour += 1
+            if type(candle_close) != str:
+                if round(candle_close, 7) == round(ticks[tick]['close'], 7):
+                    self.put_decision(balance, value, active, wins, stop_loss)
+                    break
             
-            # if hour > 23:
-            #     hour = 0
-            #     minute = 0
-            #     second = 0
-            
-            print(f'{exp_hour}:{exp_minute}:{exp_second}')
             self.set_time_sleep(1)
         
         if status:
@@ -169,7 +152,7 @@ class BOT_IQ_Option:
                     print('stop loss acionado')
                     exit()
                     
-    def put_decision(self, balance, value, active, wins=[], stop_loss=[]):
+    def put_decision(self, balance, value, active, wins=[], stop_loss=[], candle_close=''):
         if balance >= value:
             status, id = self.call_or_put(value, active, 'put', 1)
         else:
@@ -177,33 +160,15 @@ class BOT_IQ_Option:
             exit()
         
         print(f'venda: {value}')
-        
-        for _ in range(100000000000000):
+        ticks = self.get_ticks_real_time(active, 300, 1)
             
-            exp = self.get_time_exp()
-            exp_second = exp.second
-            exp_minute = exp.minute
-            exp_hour = exp.hour
+        for tick in ticks:
             
-            # if exp_second == 0:
-            #     exp_second = 59
+            if type(candle_close) != str:
+                if round(candle_close, 7) == round(ticks[tick]['close'], 7):
+                    self.call_decision(balance, value, active, wins, stop_loss)
+                    break
             
-            # second += 1
-            
-            # if second > 59:
-            #     minute += 1
-            #     second = 0
-                
-            # if minute > 59:
-            #     minute = 0
-            #     hour += 1
-            
-            # if hour > 23:
-            #     hour = 0
-            #     minute = 0
-            #     second = 0
-            
-            print(f'{exp_hour}:{exp_minute}:{exp_second}')
             self.set_time_sleep(1)
         
         if status:
@@ -227,8 +192,3 @@ class BOT_IQ_Option:
     
     def closest(self, lst, K): 
         return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
-    
-    def get_time_exp(self):
-        timestamp = self.instance.get_server_timestamp()
-        exp, _ = get_expiration_time(timestamp, 1)
-        return datetime.fromtimestamp(exp)
