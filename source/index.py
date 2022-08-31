@@ -5,7 +5,7 @@ from candlestick import candlestick
 import pandas as pd
 from datetime import datetime
 
-account_type = "PRACTICE"
+account_type = "REAL"
 API = BOT_IQ_Option(account_type)
 
 if API.check_my_connection() == False:
@@ -158,7 +158,7 @@ while True:
             print(f'mercado consolidado, mudando o ativo para {active}')
         
         # tomada de decisão em padrões de velas
-        if start and bullish_harami['result'][second_candle_index] and all_candle_color_five_m[second_candle_index] == 'green':
+        if low_tendencie and start and bullish_harami['result'][second_candle_index] and all_candle_color_five_m[second_candle_index] == 'green':
             print('harami de alta')
             API.call_decision(balance, value, active, wins, stop_loss, all_candle_close_five_m[first_candle_index])
             active_index += 1
