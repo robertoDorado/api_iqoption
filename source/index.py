@@ -50,24 +50,25 @@ if hour < 10:
     hours = f'0{hour}'
 elif hour >= 10:
     hours = hour
-    
+
 if minute < 10:
     minutes = f'0{minute}'
 elif minute >= 10:
     minutes = minute
-    
+
 if second < 10:
     seconds = f'0{second}'
 elif second >= 10:
     seconds = second
 
-print(f'my account is {account_type}: R$ {balance}, horas: {hours}:{minutes}:{seconds} no ativo {active}')
+print(
+    f'my account is {account_type}: R$ {balance}, horas: {hours}:{minutes}:{seconds} no ativo {active}')
 print('iniciando algoritimo')
 
 while True:
 
     try:
-        
+
         start = False
         time_exp += 1
 
@@ -75,13 +76,13 @@ while True:
 
             time_exp = 0
             active_index += 1
-                    
+
             if mkt and active_index > 6:
                 active_index = 1
-                
+
             if otc and active_index > 82:
                 active_index = 76
-                
+
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mudando o ativo para {active}')
@@ -89,10 +90,10 @@ while True:
         historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
 
         historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-        else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-        'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-        'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-        for i in historic_five_minutes]
+                                  else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                                  'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                                  'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                                 for i in historic_five_minutes]
 
         candles = API.get_all_candles(active, 300, total_candles_df)
 
@@ -105,6 +106,11 @@ while True:
         bullish_harami = candlestick.bullish_harami(candles_df, target='result')
         bullish_harami = bullish_harami.to_dict()
 
+        bearish_engulfing = candlestick.bearish_engulfing(candles_df, target='result')
+        bearish_engulfing = bearish_engulfing.to_dict()
+
+        bullish_engulfing = candlestick.bullish_engulfing(candles_df, target='result')
+        bullish_engulfing = bullish_engulfing.to_dict()
 
         all_candle_max_five_m = [i['max'] for i in historic_five_minutes]
         all_candle_min_five_m = [i['min'] for i in historic_five_minutes]
@@ -142,48 +148,81 @@ while True:
             high_tendencie = False
             low_tendencie = False
             consolidated_market = True
-            
-        
+
         if consolidated_market:
             active_index += 1
-                    
+
             if mkt and active_index > 6:
                 active_index = 1
-                
+
             if otc and active_index > 82:
                 active_index = 76
-                
+
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mercado consolidado, mudando o ativo para {active}')
-        
+
         # tomada de decisão em padrões de velas
-        if low_tendencie and start and bullish_harami['result'][second_candle_index] and all_candle_color_five_m[second_candle_index] == 'green':
-            print('harami de alta')
-            API.call_decision(balance, value, active, wins, stop_loss, all_candle_close_five_m[first_candle_index])
+        if low_tendencie and start and bullish_engulfing['result'][second_candle_index] and all_candle_color_five_m[second_candle_index] == 'green':
+            print('engolfo de alta')
+            API.call_decision(balance, value, active, wins, stop_loss,
+            all_candle_close_five_m[first_candle_index])
             active_index += 1
-                    
+
             if mkt and active_index > 6:
                 active_index = 1
-            
+
             if otc and active_index > 82:
                 active_index = 76
-                
+            
+            active = API.get_all_actives()[active_index]
+            historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
+            print(f'mudando para o ativo {active}')
+            
+        if low_tendencie and start and bullish_harami['result'][second_candle_index] and all_candle_color_five_m[second_candle_index] == 'green':
+            print('harami de alta')
+            API.call_decision(balance, value, active, wins, stop_loss,
+            all_candle_close_five_m[first_candle_index])
+            active_index += 1
+
+            if mkt and active_index > 6:
+                active_index = 1
+
+            if otc and active_index > 82:
+                active_index = 76
+
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mudando o ativo para {active}')
 
-        if high_tendencie and start and bearish_harami['result'][second_candle_index] and all_candle_color_five_m[second_candle_index] == 'red':
-            print('harami de baixa')
-            API.put_decision(balance, value, active, wins, stop_loss, all_candle_close_five_m[first_candle_index])
+        if high_tendencie and start and bearish_engulfing['result'][second_candle_index] and all_candle_color_five_m[second_candle_index] == 'red':
+            print('engolfo de baixa')
+            API.put_decision(balance, value, active, wins, stop_loss,
+            all_candle_close_five_m[first_candle_index])
             active_index += 1
-                    
+            
             if mkt and active_index > 6:
                 active_index = 1
-                
+
             if otc and active_index > 82:
                 active_index = 76
-                
+
+            active = API.get_all_actives()[active_index]
+            historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
+            print(f'mudando para o ativo {active}')
+            
+        if high_tendencie and start and bearish_harami['result'][second_candle_index] and all_candle_color_five_m[second_candle_index] == 'red':
+            print('harami de baixa')
+            API.put_decision(balance, value, active, wins, stop_loss,
+            all_candle_close_five_m[first_candle_index])
+            active_index += 1
+
+            if mkt and active_index > 6:
+                active_index = 1
+
+            if otc and active_index > 82:
+                active_index = 76
+
             active = API.get_all_actives()[active_index]
             historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
             print(f'mudando o ativo para {active}')
