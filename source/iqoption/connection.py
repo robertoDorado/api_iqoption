@@ -122,16 +122,6 @@ class BOT_IQ_Option:
             exit()
         
         print(f'compra: {value}')
-        ticks = self.get_ticks_real_time(active, 300, 1)
-            
-        for tick in ticks:
-                
-            if type(candle_close) != str:
-                if round(candle_close, 7) == round(ticks[tick]['close'], 7):
-                    self.put_decision(balance, value, active, wins, stop_loss)
-                    break
-            
-            self.set_time_sleep(1)
         
         if status:
             status, check_value = self.check_win_or_loss(id, 'v4')
@@ -160,16 +150,6 @@ class BOT_IQ_Option:
             exit()
         
         print(f'venda: {value}')
-        ticks = self.get_ticks_real_time(active, 300, 1)
-            
-        for tick in ticks:
-            
-            if type(candle_close) != str:
-                if round(candle_close, 7) == round(ticks[tick]['close'], 7):
-                    self.call_decision(balance, value, active, wins, stop_loss)
-                    break
-            
-            self.set_time_sleep(1)
         
         if status:
             status, check_value = self.check_win_or_loss(id, 'v4')
