@@ -99,7 +99,7 @@ while True:
             if mkt and active_index > 6:
                 active_index = 1
 
-            if otc and active_index > 82:
+            if otc and active_index >= 82:
                 active_index = 76
 
             active = API.get_all_actives()[active_index]
@@ -182,7 +182,7 @@ while True:
         if mkt and active_index > 6:
             active_index = 1
 
-        if otc and active_index > 82:
+        if otc and active_index >= 82:
             active_index = 76
 
         active = API.get_all_actives()[active_index]
