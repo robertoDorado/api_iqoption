@@ -67,8 +67,6 @@ print(
 print('iniciando algoritmo')
 
 while True:
-
-    # try:
     
     start = False
 
@@ -188,66 +186,20 @@ while True:
         print('engolfo de alta')
         API.call_decision(balance, value, active, wins, stop_loss,
                           all_candle_close_five_m[-1])
-        active_index += 1
-
-        if mkt and active_index > 6:
-            active_index = 1
-
-        if otc and active_index > 82:
-            active_index = 76
-
-        # active = API.get_all_actives()[active_index]
-        # historic_fifteen_minutes = API.get_realtime_candles(active, 300, total_candles)
-        # print(f'mudando para o ativo {active}')
 
     if high_tendencie and start and bullish_harami['result'][len(bullish_harami['result']) - 2] and all_candle_color_five_m[-1] == "green":
         print('harami de alta')
         API.call_decision(balance, value, active, wins, stop_loss,
                           all_candle_close_five_m[-1])
-        active_index += 1
-
-        if mkt and active_index > 6:
-            active_index = 1
-
-        if otc and active_index > 82:
-            active_index = 76
-
-        # active = API.get_all_actives()[active_index]
-        # historic_fifteen_minutes = API.get_realtime_candles(active, 300, total_candles)
-        # print(f'mudando o ativo para {active}')
 
     if low_tendencie and start and bearish_engulfing['result'][len(bearish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == "red":
         print('engolfo de baixa')
         API.put_decision(balance, value, active, wins, stop_loss,
                          all_candle_close_five_m[-1])
-        active_index += 1
-
-        if mkt and active_index > 6:
-            active_index = 1
-
-        if otc and active_index > 82:
-            active_index = 76
-
-        # active = API.get_all_actives()[active_index]
-        # historic_fifteen_minutes = API.get_realtime_candles(active, 300, total_candles)
-        # print(f'mudando para o ativo {active}')
 
     if low_tendencie and start and bearish_harami['result'][len(bearish_harami['result']) - 2] and all_candle_color_five_m[-1] == "red":
         print('harami de baixa')
         API.put_decision(balance, value, active, wins, stop_loss,
                          all_candle_close_five_m[-1])
-        active_index += 1
-
-        if mkt and active_index > 6:
-            active_index = 1
-
-        if otc and active_index > 82:
-            active_index = 76
-
-        # active = API.get_all_actives()[active_index]
-        # historic_fifteen_minutes = API.get_realtime_candles(active, 300, total_candles)
-        # print(f'mudando o ativo para {active}')
 
     API.set_time_sleep(1)
-    # except Exception as error:
-    #     print(f'error: {error}')

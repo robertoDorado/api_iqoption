@@ -138,9 +138,9 @@ class BOT_IQ_Option:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 
-                # if len(stop_loss) == 1:
-                #     print('stop loss acionado')
-                #     exit()
+                if len(stop_loss) == 1:
+                    print('stop loss acionado')
+                    exit()
                     
     def put_decision(self, balance, value, active, wins=[], stop_loss=[], candle_close=''):
         if balance >= value:
@@ -166,9 +166,9 @@ class BOT_IQ_Option:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 
-                # if len(stop_loss) == 1:
-                #     print('stop loss acionado')
-                #     exit()
+                if len(stop_loss) == 1:
+                    print('stop loss acionado')
+                    exit()
     
     def closest(self, lst, K): 
         return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
