@@ -60,46 +60,13 @@ if second < 10:
 elif second >= 10:
     seconds = second
 
-time_exp = minute + 5
-
 print(
     f'minha conta e {account_type}: R$ {balance}, horas: {hours}:{minutes}:{seconds} no ativo {active}')
 print('iniciando algoritmo')
 
 while True:
-    
+
     start = False
-
-    second += 1
-
-    if second > 59:
-        minute += 1
-        second = 0
-
-    if minute > 59:
-        hour += 1
-        minute = 0
-
-    if hour > 23:
-        hour = 0
-        minute = 0
-        second = 0
-
-    if minute == time_exp:
-
-        active_index += 1
-
-        if mkt and active_index > 6:
-            active_index = 1
-
-        if otc and active_index >= 82:
-            active_index = 76
-
-        active = API.get_all_actives()[active_index]
-        historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
-        historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
-        print(f'mudando o ativo para {active}')
-        time_exp = minute + 5
 
     historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
     historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
