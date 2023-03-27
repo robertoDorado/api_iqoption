@@ -4,7 +4,6 @@ from iqoption.connection import BOT_IQ_Option
 from candlestick import candlestick
 import pandas as pd
 from datetime import datetime
-import itertools
 
 account_type = "PRACTICE"
 API = BOT_IQ_Option(account_type)
@@ -64,12 +63,14 @@ elif second >= 10:
 time_exp = minute + 5
 
 print(
-    f'my account is {account_type}: R$ {balance}, horas: {hours}:{minutes}:{seconds} no ativo {active}')
+    f'minha conta e {account_type}: R$ {balance}, horas: {hours}:{minutes}:{seconds} no ativo {active}')
 print('iniciando algoritmo')
 
-infinity_iterator = itertools.cycle([1, 2, 3])
+while True:
 
-for _ in infinity_iterator:
+    # try:
+    
+    start = False
 
     second += 1
 
@@ -97,19 +98,10 @@ for _ in infinity_iterator:
             active_index = 76
 
         active = API.get_all_actives()[active_index]
-        historic_fifteen_minutes = API.get_realtime_candles(
-            active, 900, total_candles)
+        historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
         historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
         print(f'mudando o ativo para {active}')
         time_exp = minute + 5
-
-    API.set_time_sleep(1)
-
-while True:
-
-    # try:
-
-    start = False
 
     historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
     historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
