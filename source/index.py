@@ -115,16 +115,16 @@ while True:
     historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
 
     historic_fifteen_minutes = [{'candle': 'red' if historic_fifteen_minutes[i]['open'] > historic_fifteen_minutes[i]['close']
-                                 else 'green' if historic_fifteen_minutes[i]['close'] > historic_fifteen_minutes[i]['open'] else 'dogi',
-                                 'close': historic_fifteen_minutes[i]['close'], 'open': historic_fifteen_minutes[i]['open'],
-                                 'max': historic_fifteen_minutes[i]['max'], 'min': historic_fifteen_minutes[i]['min'], 'id': historic_fifteen_minutes[i]['id']}
-                                for i in historic_fifteen_minutes]
+    else 'green' if historic_fifteen_minutes[i]['close'] > historic_fifteen_minutes[i]['open'] else 'dogi',
+    'close': historic_fifteen_minutes[i]['close'], 'open': historic_fifteen_minutes[i]['open'],
+    'max': historic_fifteen_minutes[i]['max'], 'min': historic_fifteen_minutes[i]['min'], 'id': historic_fifteen_minutes[i]['id']}
+    for i in historic_fifteen_minutes]
 
     historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                              else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                              'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                              'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                             for i in historic_five_minutes]
+    else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+    'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+    'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+    for i in historic_five_minutes]
 
     candles = API.get_all_candles(active, 300, total_candles_df)
 
@@ -256,6 +256,6 @@ while True:
         # historic_fifteen_minutes = API.get_realtime_candles(active, 300, total_candles)
         # print(f'mudando o ativo para {active}')
 
-    # API.set_time_sleep(1)
+    API.set_time_sleep(1)
     # except Exception as error:
     #     print(f'error: {error}')
