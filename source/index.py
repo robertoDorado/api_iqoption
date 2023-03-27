@@ -26,8 +26,8 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = True
-mkt = False
+otc = False
+mkt = True
 
 if otc:
     active_index = 76
@@ -60,70 +60,71 @@ if second < 10:
     seconds = f'0{second}'
 elif second >= 10:
     seconds = second
-    
+
 time_exp = minute + 5
 
 print(
     f'my account is {account_type}: R$ {balance}, horas: {hours}:{minutes}:{seconds} no ativo {active}')
 print('iniciando algoritmo')
-    
+
+infinity_iterator = itertools.cycle([1, 2, 3])
+
+for _ in infinity_iterator:
+
+    second += 1
+
+    if second > 59:
+        minute += 1
+        second = 0
+
+    if minute > 59:
+        hour += 1
+        minute = 0
+
+    if hour > 23:
+        hour = 0
+        minute = 0
+        second = 0
+
+    if minute == time_exp:
+
+        active_index += 1
+
+        if mkt and active_index > 6:
+            active_index = 1
+
+        if otc and active_index >= 82:
+            active_index = 76
+
+        active = API.get_all_actives()[active_index]
+        historic_fifteen_minutes = API.get_realtime_candles(
+            active, 900, total_candles)
+        historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
+        print(f'mudando o ativo para {active}')
+        time_exp = minute + 5
+
+    API.set_time_sleep(1)
+
 while True:
 
     # try:
-    
+
     start = False
-    
-    infinity_iterator = itertools.cycle([1, 2, 3])
 
-    for _ in infinity_iterator:
-        
-        second += 1
-        
-        if second > 59:
-            minute += 1
-            second = 0
-        
-        if minute > 59:
-            hour += 1
-            minute = 0
-            
-        if hour > 23:
-            hour = 0
-            minute = 0
-            second = 0
-        
-        if minute == time_exp:
-            
-            active_index += 1
-
-            if mkt and active_index > 6:
-                active_index = 1
-
-            if otc and active_index >= 82:
-                active_index = 76
-
-            active = API.get_all_actives()[active_index]
-            historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
-            historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
-            print(f'mudando o ativo para {active}')
-            time_exp = minute + 5
-            
-        API.set_time_sleep(1)
-    
     historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
     historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
 
     historic_fifteen_minutes = [{'candle': 'red' if historic_fifteen_minutes[i]['open'] > historic_fifteen_minutes[i]['close']
-    else 'green' if historic_fifteen_minutes[i]['close'] > historic_fifteen_minutes[i]['open'] else 'dogi',
-    'close': historic_fifteen_minutes[i]['close'], 'open': historic_fifteen_minutes[i]['open'],
-    'max': historic_fifteen_minutes[i]['max'], 'min': historic_fifteen_minutes[i]['min'], 'id': historic_fifteen_minutes[i]['id']}
-    for i in historic_fifteen_minutes]
+                                 else 'green' if historic_fifteen_minutes[i]['close'] > historic_fifteen_minutes[i]['open'] else 'dogi',
+                                 'close': historic_fifteen_minutes[i]['close'], 'open': historic_fifteen_minutes[i]['open'],
+                                 'max': historic_fifteen_minutes[i]['max'], 'min': historic_fifteen_minutes[i]['min'], 'id': historic_fifteen_minutes[i]['id']}
+                                for i in historic_fifteen_minutes]
 
     historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-    else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-    'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-    'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-    for i in historic_five_minutes]
+                              else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                              'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                              'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                             for i in historic_five_minutes]
 
     candles = API.get_all_candles(active, 300, total_candles_df)
 
