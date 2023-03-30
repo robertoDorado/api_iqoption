@@ -5,6 +5,7 @@ from candlestick import candlestick
 import pandas as pd
 from datetime import datetime
 import mysql.connector
+import numpy as np
 
 cnx = mysql.connector.connect(user='labo_root', password='jB1bP1-8Cot%6+Kv',
                               host='45.90.108.177',
@@ -34,7 +35,7 @@ def count_win_registers():
 
 
 def count_loss_registers():
-    query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'loss'")
+    query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'loose'")
     cursor.execute(query)
     return cursor.fetchone()
 
@@ -70,7 +71,7 @@ total_registers = count_registers()[0]
 total_win = count_win_registers()[0]
 total_loss = count_loss_registers()[0]
 
-active_type = 'binary'
+active_type = 'turbo'
 active = API.get_all_actives()[active_index]
 payoff = API.get_profit(active, active_type) * 100
 
@@ -103,7 +104,7 @@ if second < 10:
 elif second >= 10:
     seconds = second
 
-print(f'minha conta e {account_type}: R$ {balance}, payoff de {payoff} %')
+print(f'minha conta e {account_type}: R$ {balance}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}')
 print('iniciando algoritmo')
 
 while True:
@@ -114,18 +115,32 @@ while True:
     historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
 
     historic_fifteen_minutes = [{'candle': 'red' if historic_fifteen_minutes[i]['open'] > historic_fifteen_minutes[i]['close']
-    else 'green' if historic_fifteen_minutes[i]['close'] > historic_fifteen_minutes[i]['open'] else 'dogi',
-    'close': historic_fifteen_minutes[i]['close'], 'open': historic_fifteen_minutes[i]['open'],
-    'max': historic_fifteen_minutes[i]['max'], 'min': historic_fifteen_minutes[i]['min'], 'id': historic_fifteen_minutes[i]['id']}
-    for i in historic_fifteen_minutes]
+                                 else 'green' if historic_fifteen_minutes[i]['close'] > historic_fifteen_minutes[i]['open'] else 'dogi',
+                                 'close': historic_fifteen_minutes[i]['close'], 'open': historic_fifteen_minutes[i]['open'],
+                                 'max': historic_fifteen_minutes[i]['max'], 'min': historic_fifteen_minutes[i]['min'], 'id': historic_fifteen_minutes[i]['id']}
+                                for i in historic_fifteen_minutes]
 
     historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-    else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-    'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-    'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-    for i in historic_five_minutes]
+                              else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                              'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                              'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                             for i in historic_five_minutes]
 
     candles = API.get_all_candles(active, 300, total_candles_df)
+
+    # calcular a média móvel simples (SMA) dos últimos n períodos
+    prices = np.array([candle['close'] for candle in candles])
+    sma = np.mean(prices)
+
+    # comparar o preço atual com a SMA para determinar a tendência de mercado
+    current_price = [i['close'] for i in historic_five_minutes]
+    
+    if current_price[-1] > sma:
+        trend = 'high'
+    elif current_price[-1] < sma:
+        trend = 'low'
+    else:
+        consolidated_market = True
 
     candles_df = pd.DataFrame.from_dict(candles)
     candles_df.rename(columns={'max': 'high', 'min': 'low'}, inplace=True)
@@ -171,27 +186,32 @@ while True:
         active = API.get_all_actives()[active_index]
         historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
         historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
-        print(f'mercado consolidado, mudando o ativo para {active}, payoff de {payoff}')
+        print(
+            f'mercado consolidado, mudando o ativo para {active}, payoff de {payoff}%')
 
     # tomada de decisão em padrões de velas
-    if start and bullish_engulfing['result'][len(bullish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'green':
+    if trend == 'high' and start and bullish_engulfing['result'][len(bullish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'green':
         print('engolfo de alta')
         status = API.call_decision(balance, value, active, wins, stop_loss)
-        persist_data(status, active, round(value * API.get_profit(active, active_type), 2))
+        persist_data(status, active, round(
+            value * API.get_profit(active, active_type), 2), payoff)
 
-    if start and bullish_harami['result'][len(bullish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'green':
+    if trend == 'high' and start and bullish_harami['result'][len(bullish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'green':
         print('harami de alta')
         status = API.call_decision(balance, value, active, wins, stop_loss)
-        persist_data(status, active, round(value * API.get_profit(active, active_type), 2))
+        persist_data(status, active, round(
+            value * API.get_profit(active, active_type), 2), payoff)
 
-    if start and bearish_engulfing['result'][len(bearish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'red':
+    if trend == 'low' and start and bearish_engulfing['result'][len(bearish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'red':
         print('engolfo de baixa')
         status = API.put_decision(balance, value, active, wins, stop_loss)
-        persist_data(status, active, round(value * API.get_profit(active, active_type), 2))
+        persist_data(status, active, round(
+            value * API.get_profit(active, active_type), 2), payoff)
 
-    if start and bearish_harami['result'][len(bearish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'red':
+    if trend == 'low' and start and bearish_harami['result'][len(bearish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'red':
         print('harami de baixa')
         status = API.put_decision(balance, value, active, wins, stop_loss)
-        persist_data(status, active, round(value * API.get_profit(active, active_type), 2))
+        persist_data(status, active, round(
+            value * API.get_profit(active, active_type), 2), payoff)
 
     API.set_time_sleep(1)
