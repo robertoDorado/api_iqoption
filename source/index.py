@@ -186,6 +186,7 @@ while True:
         active = API.get_all_actives()[active_index]
         historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
         historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
+        payoff = API.get_profit(active, active_type) * 100
         print(
             f'mercado consolidado, mudando o ativo para {active}, payoff de {payoff}%')
 
