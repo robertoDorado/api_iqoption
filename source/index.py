@@ -4,6 +4,40 @@ from iqoption.connection import BOT_IQ_Option
 from candlestick import candlestick
 import pandas as pd
 from datetime import datetime
+import mysql.connector
+
+cnx = mysql.connector.connect(user='labo_root', password='jB1bP1-8Cot%6+Kv',
+                              host='45.90.108.177',
+                              database='iqoption')
+
+cursor = cnx.cursor()
+
+
+def persist_data(status: str, active: str, total_value: float):
+    query = ("INSERT INTO operations (active, status, total_value) VALUES (%s, %s, %s)")
+    data = (active, status, total_value)
+    cursor.execute(query, data)
+    cnx.commit()
+    return
+
+
+def count_registers():
+    query = ("SELECT COUNT(*) as registers FROM operations")
+    cursor.execute(query)
+    return cursor.fetchone()
+
+
+def count_win_registers():
+    query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'win'")
+    cursor.execute(query)
+    return cursor.fetchone()
+
+
+def count_loss_registers():
+    query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'loss'")
+    cursor.execute(query)
+    return cursor.fetchone()
+
 
 account_type = "PRACTICE"
 API = BOT_IQ_Option(account_type)
@@ -18,22 +52,31 @@ balance = API.balance(account_type)
 wins = []
 stop_loss = []
 
-value = 1000
-total_candles = 50
+total_candles = 20
 
 high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = True
-mkt = False
+otc = False
+mkt = True
 
 if otc:
     active_index = 76
 elif mkt:
     active_index = 1
 
+total_registers = count_registers()[0]
+total_win = count_win_registers()[0]
+total_loss = count_loss_registers()[0]
+
+active_type = 'binary'
 active = API.get_all_actives()[active_index]
+payoff = API.get_profit(active, active_type) * 100
+
+fraction = API.kelly(payoff, round(total_win
+                     / total_registers, 2), round(total_loss / total_registers, 2))
+value = round(balance * fraction, 2)
 
 decimal = 5
 
@@ -60,8 +103,7 @@ if second < 10:
 elif second >= 10:
     seconds = second
 
-print(
-    f'minha conta e {account_type}: R$ {balance}, horas: {hours}:{minutes}:{seconds} no ativo {active}')
+print(f'minha conta e {account_type}: R$ {balance}, payoff de {payoff} %')
 print('iniciando algoritmo')
 
 while True:
@@ -117,23 +159,6 @@ while True:
         new_candle = []
         start = True
 
-    if len(red) > len(green):
-        high_tendencie = False
-        low_tendencie = True
-        consolidated_market = False
-        mkt_diff = len(red) - len(green)
-
-    if len(red) < len(green):
-        high_tendencie = True
-        low_tendencie = False
-        consolidated_market = False
-        mkt_diff = len(green) - len(red)
-
-    if len(red) == len(green):
-        high_tendencie = False
-        low_tendencie = False
-        consolidated_market = True
-
     if consolidated_market:
         active_index += 1
 
@@ -146,27 +171,27 @@ while True:
         active = API.get_all_actives()[active_index]
         historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
         historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
-        print(f'mercado consolidado, mudando o ativo para {active}')
+        print(f'mercado consolidado, mudando o ativo para {active}, payoff de {payoff}')
 
     # tomada de decisão em padrões de velas
-    if high_tendencie and start and bullish_engulfing['result'][len(bullish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == "green":
+    if start and bullish_engulfing['result'][len(bullish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'green':
         print('engolfo de alta')
-        API.call_decision(balance, value, active, wins, stop_loss,
-                          all_candle_close_five_m[-1])
+        status = API.call_decision(balance, value, active, wins, stop_loss)
+        persist_data(status, active, round(value * API.get_profit(active, active_type), 2))
 
-    if high_tendencie and start and bullish_harami['result'][len(bullish_harami['result']) - 2] and all_candle_color_five_m[-1] == "green":
+    if start and bullish_harami['result'][len(bullish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'green':
         print('harami de alta')
-        API.call_decision(balance, value, active, wins, stop_loss,
-                          all_candle_close_five_m[-1])
+        status = API.call_decision(balance, value, active, wins, stop_loss)
+        persist_data(status, active, round(value * API.get_profit(active, active_type), 2))
 
-    if low_tendencie and start and bearish_engulfing['result'][len(bearish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == "red":
+    if start and bearish_engulfing['result'][len(bearish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'red':
         print('engolfo de baixa')
-        API.put_decision(balance, value, active, wins, stop_loss,
-                         all_candle_close_five_m[-1])
+        status = API.put_decision(balance, value, active, wins, stop_loss)
+        persist_data(status, active, round(value * API.get_profit(active, active_type), 2))
 
-    if low_tendencie and start and bearish_harami['result'][len(bearish_harami['result']) - 2] and all_candle_color_five_m[-1] == "red":
+    if start and bearish_harami['result'][len(bearish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'red':
         print('harami de baixa')
-        API.put_decision(balance, value, active, wins, stop_loss,
-                         all_candle_close_five_m[-1])
+        status = API.put_decision(balance, value, active, wins, stop_loss)
+        persist_data(status, active, round(value * API.get_profit(active, active_type), 2))
 
     API.set_time_sleep(1)

@@ -114,7 +114,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
     
-    def call_decision(self, balance, value, active, wins=[], stop_loss=[], candle_close=''):
+    def call_decision(self, balance, value, active, wins=[], stop_loss=[]):
         if balance >= value:
             status, id = self.call_or_put(value, active, 'call', 5)
         else:
@@ -130,18 +130,19 @@ class BOT_IQ_Option:
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
                 
-                if len(wins) == 1:
-                    print('meta batida')
-                    exit()
+                # if len(wins) == 1:
+                #     print('meta batida')
+                #     exit()
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 
-                if len(stop_loss) == 1:
-                    print('stop loss acionado')
-                    exit()
+                # if len(stop_loss) == 1:
+                #     print('stop loss acionado')
+                #     exit()  
+        return status
                     
-    def put_decision(self, balance, value, active, wins=[], stop_loss=[], candle_close=''):
+    def put_decision(self, balance, value, active, wins=[], stop_loss=[]):
         if balance >= value:
             status, id = self.call_or_put(value, active, 'put', 5)
         else:
@@ -157,16 +158,20 @@ class BOT_IQ_Option:
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
                 
-                if len(wins) == 1:
-                    print('meta batida')
-                    exit()
+                # if len(wins) == 1:
+                #     print('meta batida')
+                #     exit()
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 
-                if len(stop_loss) == 1:
-                    print('stop loss acionado')
-                    exit()
+                # if len(stop_loss) == 1:
+                #     print('stop loss acionado')
+                #     exit()
+        return status
     
     def closest(self, lst, K): 
         return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
+    
+    def kelly(self, b, p, q):
+        return (b * p - q) / b
