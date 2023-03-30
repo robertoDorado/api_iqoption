@@ -59,8 +59,8 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = False
-mkt = True
+otc = True
+mkt = False
 
 if otc:
     active_index = 76
@@ -104,7 +104,7 @@ if second < 10:
 elif second >= 10:
     seconds = second
 
-print(f'minha conta e {account_type}: R$ {balance}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}')
+print(f'minha conta e {account_type}: R$ {balance}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}')
 print('iniciando algoritmo')
 
 while True:
@@ -156,6 +156,12 @@ while True:
 
     bullish_engulfing = candlestick.bullish_engulfing(candles_df, target='result')
     bullish_engulfing = bullish_engulfing.to_dict()
+    
+    hanging_man = candlestick.hanging_man(candles_df, target='result')
+    hanging_man = hanging_man.to_dict()
+    
+    hammer = candlestick.hammer(candles_df, target='result')
+    hammer = hammer.to_dict()
 
     all_candle_max_five_m = [i['max'] for i in historic_five_minutes]
     all_candle_min_five_m = [i['min'] for i in historic_five_minutes]
@@ -188,30 +194,42 @@ while True:
         historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
         payoff = API.get_profit(active, active_type) * 100
         print(
-            f'mercado consolidado, mudando o ativo para {active}, payoff de {payoff}%')
+            f'mercado consolidado, mudando o ativo para {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}')
 
     # tomada de decisão em padrões de velas
-    if trend == 'high' and start and bullish_engulfing['result'][len(bullish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'green':
+    if trend == 'low' and start and bullish_engulfing['result'][len(bullish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'green':
         print('engolfo de alta')
         status = API.call_decision(balance, value, active, wins, stop_loss)
         persist_data(status, active, round(
             value * API.get_profit(active, active_type), 2), payoff)
 
-    if trend == 'high' and start and bullish_harami['result'][len(bullish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'green':
+    if trend == 'low' and start and bullish_harami['result'][len(bullish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'green':
         print('harami de alta')
         status = API.call_decision(balance, value, active, wins, stop_loss)
         persist_data(status, active, round(
             value * API.get_profit(active, active_type), 2), payoff)
 
-    if trend == 'low' and start and bearish_engulfing['result'][len(bearish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'red':
+    if trend == 'high' and start and bearish_engulfing['result'][len(bearish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'red':
         print('engolfo de baixa')
         status = API.put_decision(balance, value, active, wins, stop_loss)
         persist_data(status, active, round(
             value * API.get_profit(active, active_type), 2), payoff)
 
-    if trend == 'low' and start and bearish_harami['result'][len(bearish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'red':
+    if trend == 'high' and start and bearish_harami['result'][len(bearish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'red':
         print('harami de baixa')
         status = API.put_decision(balance, value, active, wins, stop_loss)
+        persist_data(status, active, round(
+            value * API.get_profit(active, active_type), 2), payoff)
+    
+    if trend == 'high' and start and hanging_man['result'][len(hanging_man['result']) - 2] and all_candle_color_five_m[-1] == 'red':
+        print('enforcado')
+        status = API.put_decision(balance, value, active, wins, stop_loss)
+        persist_data(status, active, round(
+            value * API.get_profit(active, active_type), 2), payoff)
+        
+    if trend == 'low' and start and hammer['result'][len(hammer['result']) - 2] and all_candle_color_five_m[-1] == 'green':
+        print('martelo')
+        status = API.call_decision(balance, value, active, wins, stop_loss)
         persist_data(status, active, round(
             value * API.get_profit(active, active_type), 2), payoff)
 
