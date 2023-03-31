@@ -101,7 +101,7 @@ while True:
 
     # comparar o preço atual com a SMA para determinar a tendência de mercado
     current_price = [i['close'] for i in historic_five_minutes]
-    
+
     if current_price[-1] > sma:
         trend = 'high'
     elif current_price[-1] < sma:
@@ -123,10 +123,10 @@ while True:
 
     bullish_engulfing = candlestick.bullish_engulfing(candles_df, target='result')
     bullish_engulfing = bullish_engulfing.to_dict()
-    
+
     hanging_man = candlestick.hanging_man(candles_df, target='result')
     hanging_man = hanging_man.to_dict()
-    
+
     hammer = candlestick.hammer(candles_df, target='result')
     hammer = hammer.to_dict()
 
@@ -187,13 +187,13 @@ while True:
         status = API.put_decision(balance, value, active, wins, stop_loss)
         persist_data(status, active, round(
             value * API.get_profit(active, active_type), 2), payoff)
-    
+
     if trend == 'high' and start and hanging_man['result'][len(hanging_man['result']) - 2] and all_candle_color_five_m[-1] == 'red':
         print('enforcado')
         status = API.put_decision(balance, value, active, wins, stop_loss)
         persist_data(status, active, round(
             value * API.get_profit(active, active_type), 2), payoff)
-        
+
     if trend == 'low' and start and hammer['result'][len(hammer['result']) - 2] and all_candle_color_five_m[-1] == 'green':
         print('martelo')
         status = API.call_decision(balance, value, active, wins, stop_loss)
