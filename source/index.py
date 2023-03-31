@@ -7,7 +7,7 @@ from datetime import datetime
 import numpy as np
 from components.helpers import *
 
-account_type = "REAL"
+account_type = "PRACTICE"
 API = BOT_IQ_Option(account_type)
 
 if API.check_my_connection() == False:
@@ -26,8 +26,8 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = False
-mkt = True
+otc = True
+mkt = False
 
 if otc:
     active_index = 76
@@ -129,6 +129,9 @@ while True:
 
     hammer = candlestick.hammer(candles_df, target='result')
     hammer = hammer.to_dict()
+    
+    dark_cloud_cover = candlestick.dark_cloud_cover(candles_df, target='result')
+    dark_cloud_cover = dark_cloud_cover.to_dict()
 
     all_candle_max_five_m = [i['max'] for i in historic_five_minutes]
     all_candle_min_five_m = [i['min'] for i in historic_five_minutes]
@@ -167,37 +170,92 @@ while True:
     if trend == 'low' and start and bullish_engulfing['result'][len(bullish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'green':
         print('engolfo de alta')
         status = API.call_decision(balance, value, active, wins, stop_loss)
-        persist_data(status, active, round(
-            value * API.get_profit(active, active_type), 2), payoff)
+        if status == 'win':
+            register_value = value * API.get_profit(active, active_type)
+        else:
+            register_value = value
+            
+        persist_data(status, active, round(register_value, 2), payoff)
+        balance = API.balance(account_type)
+        fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+        value = round(balance * fraction, 2)
 
     if trend == 'low' and start and bullish_harami['result'][len(bullish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'green':
         print('harami de alta')
         status = API.call_decision(balance, value, active, wins, stop_loss)
-        persist_data(status, active, round(
-            value * API.get_profit(active, active_type), 2), payoff)
+        if status == 'win':
+            register_value = value * API.get_profit(active, active_type)
+        else:
+            register_value = value
+            
+        persist_data(status, active, round(register_value, 2), payoff)
+        balance = API.balance(account_type)
+        fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+        value = round(balance * fraction, 2)
 
     if trend == 'high' and start and bearish_engulfing['result'][len(bearish_engulfing['result']) - 2] and all_candle_color_five_m[-1] == 'red':
         print('engolfo de baixa')
         status = API.put_decision(balance, value, active, wins, stop_loss)
-        persist_data(status, active, round(
-            value * API.get_profit(active, active_type), 2), payoff)
+        if status == 'win':
+            register_value = value * API.get_profit(active, active_type)
+        else:
+            register_value = value
+            
+        persist_data(status, active, round(register_value, 2), payoff)
+        balance = API.balance(account_type)
+        fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+        value = round(balance * fraction, 2)
 
     if trend == 'high' and start and bearish_harami['result'][len(bearish_harami['result']) - 2] and all_candle_color_five_m[-1] == 'red':
         print('harami de baixa')
         status = API.put_decision(balance, value, active, wins, stop_loss)
-        persist_data(status, active, round(
-            value * API.get_profit(active, active_type), 2), payoff)
+        if status == 'win':
+            register_value = value * API.get_profit(active, active_type)
+        else:
+            register_value = value
+            
+        persist_data(status, active, round(register_value, 2), payoff)
+        balance = API.balance(account_type)
+        fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+        value = round(balance * fraction, 2)
 
     if trend == 'high' and start and hanging_man['result'][len(hanging_man['result']) - 2] and all_candle_color_five_m[-1] == 'red':
         print('enforcado')
         status = API.put_decision(balance, value, active, wins, stop_loss)
-        persist_data(status, active, round(
-            value * API.get_profit(active, active_type), 2), payoff)
+        if status == 'win':
+            register_value = value * API.get_profit(active, active_type)
+        else:
+            register_value = value
+            
+        persist_data(status, active, round(register_value, 2), payoff)
+        balance = API.balance(account_type)
+        fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+        value = round(balance * fraction, 2)
 
     if trend == 'low' and start and hammer['result'][len(hammer['result']) - 2] and all_candle_color_five_m[-1] == 'green':
         print('martelo')
         status = API.call_decision(balance, value, active, wins, stop_loss)
-        persist_data(status, active, round(
-            value * API.get_profit(active, active_type), 2), payoff)
+        if status == 'win':
+            register_value = value * API.get_profit(active, active_type)
+        else:
+            register_value = value
+            
+        persist_data(status, active, round(register_value, 2), payoff)
+        balance = API.balance(account_type)
+        fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+        value = round(balance * fraction, 2)
+    
+    if trend == 'high' and start and dark_cloud_cover['result'][len(dark_cloud_cover['result']) - 2] and all_candle_color_five_m[-1] == 'red':
+        print('nuvem negra')
+        status = API.put_decision(balance, value, active, wins, stop_loss)
+        if status == 'win':
+            register_value = value * API.get_profit(active, active_type)
+        else:
+            register_value = value
+            
+        persist_data(status, active, round(register_value, 2), payoff)
+        balance = API.balance(account_type)
+        fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+        value = round(balance * fraction, 2)
 
     API.set_time_sleep(1)
