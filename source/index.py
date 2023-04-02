@@ -168,7 +168,7 @@ while True:
         value = round(balance * fraction, 2)
         
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
-    elif [i['close'] for i in candles][-1] >= resistance - threshold and start:
+    elif [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
             print(f"Pullback detectado! venda no valor de {value}")
             
             if value >= 20000:
