@@ -3,6 +3,7 @@ from iqoptionapi.stable_api import IQ_Option
 import time
 from datetime import datetime
 from pytz import timezone
+from components.helpers import *
 
 class BOT_IQ_Option:
     
@@ -112,7 +113,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
     
-    def call_decision(self, balance, value, active, wins=[], stop_loss=[]):
+    def call_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1):
         if balance >= value:
             status, id = self.call_or_put(value, active, 'call', 5)
         else:
@@ -127,20 +128,24 @@ class BOT_IQ_Option:
             if status == 'win':
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
+                register_value = value * self.get_profit(active, active_type)
+                persist_data(status, active, round(register_value, 2), payoff)
                 
-                if len(wins) == 5:
+                if len(wins) == goal_win:
                     print('meta batida')
                     exit()
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
+                register_value = value
+                persist_data(status, active, round(register_value, 2), payoff)
                 
-                if len(stop_loss) == 1:
+                if len(stop_loss) == goal_loss:
                     print('stop loss acionado')
                     exit()  
         return status
                     
-    def put_decision(self, balance, value, active, wins=[], stop_loss=[]):
+    def put_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1):
         if balance >= value:
             status, id = self.call_or_put(value, active, 'put', 5)
         else:
@@ -155,15 +160,19 @@ class BOT_IQ_Option:
             if status == 'win':
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
+                register_value = value * self.get_profit(active, active_type)
+                persist_data(status, active, round(register_value, 2), payoff)
                 
-                if len(wins) == 5:
+                if len(wins) == goal_win:
                     print('meta batida')
                     exit()
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
+                register_value = value
+                persist_data(status, active, round(register_value, 2), payoff)
                 
-                if len(stop_loss) == 1:
+                if len(stop_loss) == goal_loss:
                     print('stop loss acionado')
                     exit()
         return status
