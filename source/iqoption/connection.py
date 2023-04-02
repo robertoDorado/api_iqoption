@@ -1,6 +1,4 @@
 from asyncio.windows_events import NULL
-from multiprocessing.resource_sharer import stop
-import string
 from iqoptionapi.stable_api import IQ_Option
 import time
 from datetime import datetime
@@ -130,16 +128,16 @@ class BOT_IQ_Option:
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
                 
-                # if len(wins) == 1:
-                #     print('meta batida')
-                #     exit()
+                if len(wins) == 5:
+                    print('meta batida')
+                    exit()
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 
-                # if len(stop_loss) == 1:
-                #     print('stop loss acionado')
-                #     exit()  
+                if len(stop_loss) == 1:
+                    print('stop loss acionado')
+                    exit()  
         return status
                     
     def put_decision(self, balance, value, active, wins=[], stop_loss=[]):
@@ -158,16 +156,16 @@ class BOT_IQ_Option:
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
                 
-                # if len(wins) == 1:
-                #     print('meta batida')
-                #     exit()
+                if len(wins) == 5:
+                    print('meta batida')
+                    exit()
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 
-                # if len(stop_loss) == 1:
-                #     print('stop loss acionado')
-                #     exit()
+                if len(stop_loss) == 1:
+                    print('stop loss acionado')
+                    exit()
         return status
     
     def closest(self, lst, K): 
