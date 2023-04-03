@@ -5,14 +5,14 @@ from datetime import datetime
 import numpy as np
 from components.helpers import *
 
-account_type = "PRACTICE"
+account_type = "REAL"
 API = BOT_IQ_Option(account_type)
 
 if account_type == "PRACTICE":
     goal_win = 5
     goal_loss = 1
 else:
-    goal_win = 2
+    goal_win = 1
     goal_loss = 1
     
 if API.check_my_connection() == False:
@@ -31,17 +31,17 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = True
-mkt = False
+otc = False
+mkt = True
 
 if otc:
     active_index = 76
 elif mkt:
     active_index = 1
 
-total_registers = count_registers()[0]
-total_win = count_win_registers()[0]
-total_loss = count_loss_registers()[0]
+total_registers = count_registers(account_type)[0]
+total_win = count_win_registers(account_type)[0]
+total_loss = count_loss_registers(account_type)[0]
 
 
 if total_registers == 0:
@@ -62,7 +62,7 @@ fraction = API.kelly(payoff, round(total_win
 value = round(balance * fraction, 2)
 
 if value >= 20000:
-    value = value / 2
+    value = 20000
 
 total_candles_df = total_candles
 new_candle = []
@@ -72,7 +72,7 @@ hour = time.hour
 minute = time.minute
 second = time.second
 
-threshold = 0.5
+threshold = 0.02
 
 if hour < 10:
     hours = f'0{hour}'
@@ -89,7 +89,7 @@ if second < 10:
 elif second >= 10:
     seconds = second
 
-print(f'minha conta e {account_type}: R$ {balance}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}x{goal_loss}')
+print(f'minha conta e {account_type}: R$ {balance}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}x{goal_loss}, entrada: {value}')
 print('iniciando algoritmo')
 
 while True:
@@ -163,19 +163,23 @@ while True:
         support = min([i['close'] for i in candles])
         resistance = max([i['close'] for i in candles])
         
-        if [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
-            print("Pullback de compra detectado!")
+        if [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold:
             
-            if value >= 20000:
-                value = 20000
-            
-            status = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
-            balance = API.balance(account_type)
-            fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-            value = round(balance * fraction, 2)
+            if start:
+                print("Pullback de compra detectado!")
+                
+                if value >= 20000:
+                    value = 20000
+                
+                status = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
+                balance = API.balance(account_type)
+                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+                value = round(balance * fraction, 2)
             
         # Se estiver acima, verificar se o preço chegou ao nível de resistência
-        elif [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
+        elif [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold:
+                
+            if start:
                 print("Pullback de venda detectado!")
                 
                 if value >= 20000:
@@ -202,26 +206,30 @@ while True:
         # verifica se o preço atual está abaixo do pullback
         preco_atual = precos[-1, 1]
         
-        if [i['close'] for i in candles][-1] < min_value + threshold and preco_atual < pullback and preco_atual < sma and start:
-            print("Pullback OTC de compra detectado!")
+        if [i['close'] for i in candles][-1] < min_value + threshold and preco_atual < pullback and preco_atual < sma:
             
-            if value >= 20000:
-                value = 20000
+            if start:
+                print("Pullback OTC de compra detectado!")
                 
-            status = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
-            balance = API.balance(account_type)
-            fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-            value = round(balance * fraction, 2)
-                
-        elif [i['close'] for i in candles][-1] > max_value - threshold and preco_atual > pullback and preco_atual > sma and start:
-            print("Pullback OTC de venda detectado!")
-            
-            if value >= 20000:
-                value = 20000
+                if value >= 20000:
+                    value = 20000
                     
-            status = API.put_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
-            balance = API.balance(account_type)
-            fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-            value = round(balance * fraction, 2)
+                status = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
+                balance = API.balance(account_type)
+                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+                value = round(balance * fraction, 2)
+                
+        else:
+            
+            if start:
+                print("Pullback OTC de venda detectado!")
+                
+                if value >= 20000:
+                    value = 20000
+                        
+                status = API.put_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
+                balance = API.balance(account_type)
+                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+                value = round(balance * fraction, 2)
         
     API.set_time_sleep(1)

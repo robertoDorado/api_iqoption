@@ -22,20 +22,20 @@ def persist_data(status: str, active: str, total_value: float, payoff: float, ac
     return
 
 
-def count_registers():
-    query = ("SELECT COUNT(*) as registers FROM operations WHERE date = %s")
-    cursor.execute(query, (format_date(),))
+def count_registers(account_type: str):
+    query = ("SELECT COUNT(*) as registers FROM operations WHERE date = %s AND account_type = %s")
+    cursor.execute(query, (format_date(), account_type))
     return cursor.fetchone()
 
 
-def count_win_registers():
-    query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'win' AND date = %s")
-    cursor.execute(query, (format_date(),))
+def count_win_registers(account_type: str):
+    query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'win' AND date = %s AND account_type = %s")
+    cursor.execute(query, (format_date(), account_type))
     return cursor.fetchone()
 
 
-def count_loss_registers():
-    query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'loose' AND date = %s")
-    cursor.execute(query, (format_date(),))
+def count_loss_registers(account_type: str):
+    query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'loose' AND date = %s AND account_type = %s")
+    cursor.execute(query, (format_date(), account_type))
     return cursor.fetchone()
 
