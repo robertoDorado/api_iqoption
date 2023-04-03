@@ -14,9 +14,9 @@ def format_date():
 def format_datetime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-def persist_data(status: str, active: str, total_value: float, payoff: float):
-    query = ("INSERT INTO operations (active, status, total_value, payoff, date, date_time) VALUES (%s, %s, %s, %s, %s, %s)")
-    data = (active, status, total_value, payoff, format_date(), format_datetime())
+def persist_data(status: str, active: str, total_value: float, payoff: float, account_type: str):
+    query = ("INSERT INTO operations (active, status, total_value, payoff, date, date_time, account_type) VALUES (%s, %s, %s, %s, %s, %s, %s)")
+    data = (active, status, total_value, payoff, format_date(), format_datetime(), account_type)
     cursor.execute(query, data)
     cnx.commit()
     return
