@@ -115,7 +115,7 @@ class BOT_IQ_Option:
     
     def call_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
         if balance >= value:
-            status, id = self.call_or_put(value, active, 'call', 5)
+            status, id = self.call_or_put(value, active, 'call', 1)
         else:
             print('saldo insuficiente')
             exit()
@@ -147,7 +147,7 @@ class BOT_IQ_Option:
                     
     def put_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
         if balance >= value:
-            status, id = self.call_or_put(value, active, 'put', 5)
+            status, id = self.call_or_put(value, active, 'put', 1)
         else:
             print('saldo insuficiente')
             exit()

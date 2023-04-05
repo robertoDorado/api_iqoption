@@ -8,7 +8,7 @@ from components.helpers import *
 account_type = "PRACTICE"
 API = BOT_IQ_Option(account_type)
 
-goal_win = 2
+goal_win = 5
 goal_loss = 1
     
 if API.check_my_connection() == False:
@@ -27,8 +27,8 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = True
-mkt = False
+otc = False
+mkt = True
 
 if otc:
     active_index = 76
@@ -48,6 +48,8 @@ if total_win == 0:
     
 if total_loss == 0:
     total_loss = 1
+elif total_loss >= 1:
+    total_loss *= 20
 
 active_type = 'turbo'
 active = API.get_all_actives()[active_index]
@@ -107,14 +109,14 @@ while True:
                               'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
                              for i in historic_five_minutes]
 
-    candles = API.get_all_candles(active, 300, total_candles_df)
+    candles = API.get_all_candles(active, 900, total_candles_df)
 
     # calcular a média móvel simples (SMA) dos últimos n períodos
     prices = np.array([candle['close'] for candle in candles])
     sma = np.mean(prices)
 
     # comparar o preço atual com a SMA para determinar a tendência de mercado
-    current_price = [i['close'] for i in historic_five_minutes]
+    current_price = [i['close'] for i in historic_fifteen_minutes]
 
     if current_price[-1] > sma:
         trend = 'high'
@@ -123,12 +125,13 @@ while True:
     else:
         consolidated_market = True
 
+    all_candle_id_fifteen_m = [i['id'] for i in historic_fifteen_minutes]
     all_candle_id_five_m = [i['id'] for i in historic_five_minutes]
 
     if len(new_candle) < 1:
-        new_candle.append(all_candle_id_five_m[-1])
+        new_candle.append(all_candle_id_fifteen_m[-1])
 
-    if new_candle[0] == all_candle_id_five_m[-2]:
+    if new_candle[0] == all_candle_id_fifteen_m[-2]:
         new_candle = []
         start = True
 
@@ -167,6 +170,12 @@ while True:
             fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
             value = round(balance * fraction, 2)
             
+            if value >= 20000:
+                print(f'proxima entrada: R$ 20.000,00')
+            else:
+                print(f'proxima entrada: {format_currency(value)}')
+                
+            
         # Se estiver acima, verificar se o preço chegou ao nível de resistência
         elif [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
                 
@@ -179,6 +188,11 @@ while True:
             balance = API.balance(account_type)
             fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
             value = round(balance * fraction, 2)
+            
+            if value >= 20000:
+                print(f'proxima entrada: R$ 20.000,00')
+            else:
+                print(f'proxima entrada: {format_currency(value)}')
     else:
         max_value = max([i["max"] for i in candles][-2], [i["open"] for i in candles][-2])
         min_value = min([i["min"] for i in candles][-2], [i["open"] for i in candles][-2])
@@ -207,6 +221,11 @@ while True:
             balance = API.balance(account_type)
             fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
             value = round(balance * fraction, 2)
+            
+            if value >= 20000:
+                print(f'proxima entrada: R$ 20.000,00')
+            else:
+                print(f'proxima entrada: {format_currency(value)}')
                 
         elif [i['close'] for i in candles][-1] > max_value - threshold and preco_atual > pullback and preco_atual > sma and start:
 
@@ -219,5 +238,10 @@ while True:
             balance = API.balance(account_type)
             fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
             value = round(balance * fraction, 2)
+            
+            if value >= 20000:
+                print(f'proxima entrada: R$ 20.000,00')
+            else:
+                print(f'proxima entrada: {format_currency(value)}')
         
     API.set_time_sleep(1)
