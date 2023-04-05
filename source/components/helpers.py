@@ -1,5 +1,6 @@
 import mysql.connector
 from datetime import datetime
+import locale
 
 cnx = mysql.connector.connect(user='labo_root', password='jB1bP1-8Cot%6+Kv',
                               host='45.90.108.177',
@@ -39,3 +40,7 @@ def count_loss_registers(account_type: str):
     cursor.execute(query, (format_date(), account_type))
     return cursor.fetchone()
 
+
+def format_currency(value):
+    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8') # definir o idioma para português do Brasil
+    return locale.currency(value, grouping=True, symbol=None)

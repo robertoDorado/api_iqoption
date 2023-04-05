@@ -115,12 +115,12 @@ class BOT_IQ_Option:
     
     def call_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
         if balance >= value:
-            status, id = self.call_or_put(value, active, 'call', 1)
+            status, id = self.call_or_put(value, active, 'call', 5)
         else:
             print('saldo insuficiente')
             exit()
         
-        print(f'compra: {value}')
+        print(f'compra: R$ {format_currency(value)}')
         
         if status:
             status, check_value = self.check_win_or_loss(id, 'v4')
@@ -131,7 +131,7 @@ class BOT_IQ_Option:
                 register_value = value * self.get_profit(active, active_type)
                 persist_data(status, active, round(register_value, 2), payoff, account_type)
                 
-                if len(wins) == goal_win:
+                if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
             else:
@@ -140,19 +140,19 @@ class BOT_IQ_Option:
                 register_value = value
                 persist_data(status, active, round(register_value, 2), payoff, account_type)
                 
-                if len(stop_loss) == goal_loss:
+                if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
-                    exit()  
+                    exit() 
         return status
                     
     def put_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
         if balance >= value:
-            status, id = self.call_or_put(value, active, 'put', 1)
+            status, id = self.call_or_put(value, active, 'put', 5)
         else:
             print('saldo insuficiente')
             exit()
         
-        print(f'venda: {value}')
+        print(f'venda: R$ {format_currency(value)}')
         
         if status:
             status, check_value = self.check_win_or_loss(id, 'v4')
@@ -163,16 +163,17 @@ class BOT_IQ_Option:
                 register_value = value * self.get_profit(active, active_type)
                 persist_data(status, active, round(register_value, 2), payoff, account_type)
                 
-                if len(wins) == goal_win:
+                if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
+                
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 register_value = value
                 persist_data(status, active, round(register_value, 2), payoff, account_type)
                 
-                if len(stop_loss) == goal_loss:
+                if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
                     exit()
         return status
