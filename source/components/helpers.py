@@ -41,6 +41,6 @@ def count_loss_registers(account_type: str):
     return cursor.fetchone()
 
 
-def format_currency(value):
+def format_currency(value: float):
     locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8') # definir o idioma para português do Brasil
     return locale.currency(value, grouping=True, symbol=None)

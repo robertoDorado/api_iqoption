@@ -113,7 +113,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
     
-    def call_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
+    def call_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL, fishing=False):
         if balance >= value:
             status, id = self.call_or_put(value, active, 'call', 1)
         else:
@@ -134,6 +134,8 @@ class BOT_IQ_Option:
                 if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
+                elif len(wins) >= 3:
+                    fishing = True
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
@@ -143,9 +145,9 @@ class BOT_IQ_Option:
                 if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
                     exit() 
-        return status
+        return status, fishing
                     
-    def put_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
+    def put_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL, fishing=False):
         if balance >= value:
             status, id = self.call_or_put(value, active, 'put', 1)
         else:
@@ -166,6 +168,8 @@ class BOT_IQ_Option:
                 if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
+                elif len(wins) >= 3:
+                    fishing = True
                 
             else:
                 stop_loss.append(status)
@@ -176,7 +180,7 @@ class BOT_IQ_Option:
                 if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
                     exit()
-        return status
+        return status, fishing
     
     def closest(self, lst, K): 
         return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]

@@ -39,28 +39,23 @@ total_registers = count_registers(account_type)[0]
 total_win = count_win_registers(account_type)[0]
 total_loss = count_loss_registers(account_type)[0]
 
+fishing = False
 
 if total_registers == 0:
     total_registers = 2
     
 if total_win == 0:
     total_win = 1
-    
-if total_loss == 0:
+
+if total_loss >= 0:
     total_loss = 1
-elif total_loss >= 1:
-    total_loss *= 20
 
 active_type = 'turbo'
 active = API.get_all_actives()[active_index]
 payoff = API.get_profit(active, active_type) * 100
 
-fraction = API.kelly(payoff, round(total_win
-                     / total_registers, 2), round(total_loss / total_registers, 2))
-value = round(balance * fraction, 2)
-
-if value >= 20000:
-    value = 20000
+if fishing == False:
+    value = 2
 
 total_candles_df = total_candles
 new_candle = []
@@ -93,6 +88,7 @@ print('iniciando algoritmo')
 while True:
 
     start = False
+    fishing = False
 
     historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
     historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
@@ -109,14 +105,14 @@ while True:
                               'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
                              for i in historic_five_minutes]
 
-    candles = API.get_all_candles(active, 900, total_candles_df)
+    candles = API.get_all_candles(active, 300, total_candles_df)
 
     # calcular a média móvel simples (SMA) dos últimos n períodos
     prices = np.array([candle['close'] for candle in candles])
     sma = np.mean(prices)
 
     # comparar o preço atual com a SMA para determinar a tendência de mercado
-    current_price = [i['close'] for i in historic_fifteen_minutes]
+    current_price = [i['close'] for i in historic_five_minutes]
 
     if current_price[-1] > sma:
         trend = 'high'
@@ -129,9 +125,9 @@ while True:
     all_candle_id_five_m = [i['id'] for i in historic_five_minutes]
 
     if len(new_candle) < 1:
-        new_candle.append(all_candle_id_fifteen_m[-1])
+        new_candle.append(all_candle_id_five_m[-1])
 
-    if new_candle[0] == all_candle_id_fifteen_m[-2]:
+    if new_candle[0] == all_candle_id_five_m[-2]:
         new_candle = []
         start = True
 
@@ -164,16 +160,24 @@ while True:
             
             if value >= 20000:
                 value = 20000
+            elif value < 2:
+                value = 2
             
-            status = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
-            balance = API.balance(account_type)
-            fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-            value = round(balance * fraction, 2)
+            status, fishing = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+            
+            if fishing:
+                balance = API.balance(account_type)
+                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+                value = round(balance * fraction, 2)
+            else:
+                value = 2
             
             if value >= 20000:
                 print(f'proxima entrada: R$ 20.000,00')
+            elif value < 2:
+                print(f'proxima entrada: R$ 2,00')
             else:
-                print(f'proxima entrada: {format_currency(value)}')
+                print(f'proxima entrada: R$ {format_currency(value)}')
                 
             
         # Se estiver acima, verificar se o preço chegou ao nível de resistência
@@ -183,16 +187,24 @@ while True:
             
             if value >= 20000:
                 value = 20000
+            elif value < 2:
+                value = 2
                 
-            status = API.put_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
-            balance = API.balance(account_type)
-            fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-            value = round(balance * fraction, 2)
+            status, fishing = API.put_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+            
+            if fishing:
+                balance = API.balance(account_type)
+                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+                value = round(balance * fraction, 2)
+            else:
+                value = 2
             
             if value >= 20000:
                 print(f'proxima entrada: R$ 20.000,00')
+            elif value < 2:
+                print(f'proxima entrada: R$ 2,00')
             else:
-                print(f'proxima entrada: {format_currency(value)}')
+                print(f'proxima entrada: R$ {format_currency(value)}')
     else:
         max_value = max([i["max"] for i in candles][-2], [i["open"] for i in candles][-2])
         min_value = min([i["min"] for i in candles][-2], [i["open"] for i in candles][-2])
@@ -216,16 +228,24 @@ while True:
             
             if value >= 20000:
                 value = 20000
+            elif value < 2:
+                value = 2
                 
-            status = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
-            balance = API.balance(account_type)
-            fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-            value = round(balance * fraction, 2)
+            status, fishing = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+            
+            if fishing:
+                balance = API.balance(account_type)
+                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+                value = round(balance * fraction, 2)
+            else:
+                value = 2
             
             if value >= 20000:
                 print(f'proxima entrada: R$ 20.000,00')
+            elif value < 2:
+                print(f'proxima entrada: R$ 2,00')
             else:
-                print(f'proxima entrada: {format_currency(value)}')
+                print(f'proxima entrada: R$ {format_currency(value)}')
                 
         elif [i['close'] for i in candles][-1] > max_value - threshold and preco_atual > pullback and preco_atual > sma and start:
 
@@ -233,15 +253,23 @@ while True:
             
             if value >= 20000:
                 value = 20000
+            elif value < 2:
+                value = 2
                     
-            status = API.put_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
-            balance = API.balance(account_type)
-            fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-            value = round(balance * fraction, 2)
+            status, fishing = API.put_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+            
+            if fishing:
+                balance = API.balance(account_type)
+                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
+                value = round(balance * fraction, 2)
+            else:
+                value = 2
             
             if value >= 20000:
                 print(f'proxima entrada: R$ 20.000,00')
+            elif value < 2:
+                print(f'proxima entrada: R$ 2,00')
             else:
-                print(f'proxima entrada: {format_currency(value)}')
+                print(f'proxima entrada: R$ {format_currency(value)}')
         
     API.set_time_sleep(1)
