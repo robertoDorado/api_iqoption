@@ -134,7 +134,7 @@ class BOT_IQ_Option:
                 if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
-                elif len(wins) >= 3:
+                elif len(wins) >= 1:
                     fishing = True
             else:
                 stop_loss.append(status)
@@ -168,7 +168,7 @@ class BOT_IQ_Option:
                 if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
-                elif len(wins) >= 3:
+                elif len(wins) >= 1:
                     fishing = True
                 
             else:
