@@ -27,8 +27,8 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = False
-mkt = True
+otc = True
+mkt = False
 
 if otc:
     active_index = 76
@@ -154,12 +154,12 @@ while True:
                 elif value < 2:
                     value = 2
                 
-                status, fishing = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+                status, fishing = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
                 
                 if fishing:
                     balance = API.balance(account_type)
-                    fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-                    value = round(balance * fraction, 2)
+                    fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+                    value = float(format(balance * fraction, '.2f'))
                 else:
                     value = 2
                 
@@ -177,12 +177,12 @@ while True:
                 elif value < 2:
                     value = 2
                     
-                status, fishing = API.put_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+                status, fishing = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
                 
                 if fishing:
                     balance = API.balance(account_type)
-                    fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-                    value = round(balance * fraction, 2)
+                    fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+                    value = float(format(balance * fraction, '.2f'))
                 else:
                     value = 2
                 
@@ -214,12 +214,12 @@ while True:
                 elif value < 2:
                     value = 2
                 
-                status, fishing = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+                status, fishing = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
                 
                 if fishing:
                     balance = API.balance(account_type)
-                    fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-                    value = round(balance * fraction, 2)
+                    fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+                    value = float(format(balance * fraction, '.2f'))
                 else:
                     value = 2
                 
@@ -237,12 +237,12 @@ while True:
                 elif value < 2:
                     value = 2
                     
-                status, fishing = API.put_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+                status, fishing = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
                 
                 if fishing:
                     balance = API.balance(account_type)
-                    fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-                    value = round(balance * fraction, 2)
+                    fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+                    value = float(format(balance * fraction, '.2f'))
                 else:
                     value = 2
                 
@@ -272,12 +272,12 @@ while True:
             elif value < 2:
                 value = 2
             
-            status, fishing = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+            status, fishing = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
             
             if fishing:
                 balance = API.balance(account_type)
-                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-                value = round(balance * fraction, 2)
+                fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+                value = float(format(balance * fraction, '.2f'))
             else:
                 value = 2
             
@@ -299,12 +299,12 @@ while True:
             elif value < 2:
                 value = 2
                 
-            status, fishing = API.put_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+            status, fishing = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
             
             if fishing:
                 balance = API.balance(account_type)
-                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-                value = round(balance * fraction, 2)
+                fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+                value = float(format(balance * fraction, '.2f'))
             else:
                 value = 2
             
@@ -341,12 +341,12 @@ while True:
             elif value < 2:
                 value = 2
                 
-            status, fishing = API.call_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+            status, fishing = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
             
             if fishing:
                 balance = API.balance(account_type)
-                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-                value = round(balance * fraction, 2)
+                fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+                value = float(format(balance * fraction, '.2f'))
             else:
                 value = 2
             
@@ -366,12 +366,12 @@ while True:
             elif value < 2:
                 value = 2
                     
-            status, fishing = API.put_decision(balance, value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
+            status, fishing = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
             
             if fishing:
                 balance = API.balance(account_type)
-                fraction = API.kelly(payoff, round(total_win / total_registers, 2), round(total_loss / total_registers, 2))
-                value = round(balance * fraction, 2)
+                fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+                value = float(format(balance * fraction, '.2f'))
             else:
                 value = 2
             

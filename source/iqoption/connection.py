@@ -113,8 +113,8 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
     
-    def call_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL, fishing=False):
-        if balance >= value:
+    def call_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL, fishing=False):
+        if float(format(self.balance(account_type), '.2f')) >= value:
             status, id = self.call_or_put(value, active, 'call', 1)
         else:
             print('saldo insuficiente')
@@ -129,7 +129,7 @@ class BOT_IQ_Option:
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
                 register_value = value * self.get_profit(active, active_type)
-                persist_data(status, active, round(register_value, 2), payoff, account_type)
+                persist_data(status, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
                 
                 if len(wins) >= goal_win:
                     print('meta batida')
@@ -140,15 +140,15 @@ class BOT_IQ_Option:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 register_value = value
-                persist_data(status, active, round(register_value, 2), payoff, account_type)
+                persist_data(status, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
                 
                 if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
                     exit() 
         return status, fishing
                     
-    def put_decision(self, balance, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL, fishing=False):
-        if balance >= value:
+    def put_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL, fishing=False):
+        if float(format(self.balance(account_type), '.2f')) >= value:
             status, id = self.call_or_put(value, active, 'put', 1)
         else:
             print('saldo insuficiente')
@@ -163,7 +163,7 @@ class BOT_IQ_Option:
                 wins.append(status)
                 print(f'total wins: {len(wins)}')
                 register_value = value * self.get_profit(active, active_type)
-                persist_data(status, active, round(register_value, 2), payoff, account_type)
+                persist_data(status, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
                 
                 if len(wins) >= goal_win:
                     print('meta batida')
@@ -175,7 +175,7 @@ class BOT_IQ_Option:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
                 register_value = value
-                persist_data(status, active, round(register_value, 2), payoff, account_type)
+                persist_data(status, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
                 
                 if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
