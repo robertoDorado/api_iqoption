@@ -90,14 +90,7 @@ while True:
     start = False
     fishing = False
 
-    historic_fifteen_minutes = API.get_realtime_candles(active, 900, total_candles)
     historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
-
-    historic_fifteen_minutes = [{'candle': 'red' if historic_fifteen_minutes[i]['open'] > historic_fifteen_minutes[i]['close']
-                                 else 'green' if historic_fifteen_minutes[i]['close'] > historic_fifteen_minutes[i]['open'] else 'dogi',
-                                 'close': historic_fifteen_minutes[i]['close'], 'open': historic_fifteen_minutes[i]['open'],
-                                 'max': historic_fifteen_minutes[i]['max'], 'min': historic_fifteen_minutes[i]['min'], 'id': historic_fifteen_minutes[i]['id']}
-                                for i in historic_fifteen_minutes]
 
     historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
                               else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
@@ -121,7 +114,6 @@ while True:
     else:
         consolidated_market = True
 
-    all_candle_id_fifteen_m = [i['id'] for i in historic_fifteen_minutes]
     all_candle_id_five_m = [i['id'] for i in historic_five_minutes]
 
     if len(new_candle) < 1:
