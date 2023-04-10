@@ -27,8 +27,8 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = True
-mkt = False
+otc = False
+mkt = True
 
 if otc:
     active_index = 76
@@ -255,7 +255,7 @@ while True:
         support = min([i['close'] for i in candles])
         resistance = max([i['close'] for i in candles])
         
-        if [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
+        if trend == 'low' and [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
             
             print("Pullback de compra detectado!")
             
@@ -282,7 +282,7 @@ while True:
                 
             
         # Se estiver acima, verificar se o preço chegou ao nível de resistência
-        elif [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
+        if trend == 'high' and [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
                 
             print("Pullback de venda detectado!")
             
