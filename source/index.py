@@ -4,12 +4,16 @@ from iqoption.connection import BOT_IQ_Option
 from datetime import datetime
 import numpy as np
 from components.helpers import *
+from sklearn.linear_model import LinearRegression
+import pandas as pd
+import warnings
 
+warnings.filterwarnings('ignore')
 account_type = "PRACTICE"
 API = BOT_IQ_Option(account_type)
 
-goal_win = 2
-goal_loss = 1
+goal_win = 1000
+goal_loss = 1000
     
 if API.check_my_connection() == False:
     print('erro na conexão')
@@ -27,8 +31,8 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = False
-mkt = True
+otc = True
+mkt = False
 
 if otc:
     active_index = 76
@@ -38,8 +42,6 @@ elif mkt:
 total_registers = count_registers(account_type)[0]
 total_win = count_win_registers(account_type)[0]
 total_loss = count_loss_registers(account_type)[0]
-
-fishing = False
 
 if total_registers == 0:
     total_registers = 2
@@ -54,8 +56,12 @@ active_type = 'turbo'
 active = API.get_all_actives()[active_index]
 payoff = API.get_profit(active, active_type) * 100
 
-if fishing == False:
-    value = 2
+balance = API.balance(account_type)
+fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+value = float(format(balance * fraction, '.2f'))
+
+if value >= 20000:
+    value = 20000
 
 total_candles_df = total_candles
 new_candle = []
@@ -82,13 +88,12 @@ if second < 10:
 elif second >= 10:
     seconds = second
 
-print(f'minha conta e {account_type}: R$ {format_currency(balance)}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}X{goal_loss}, entrada: R$ {format_currency(value)}')
+print(f'minha conta e {account_type}: R$ {format_currency(balance)}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}X{goal_loss}')
 print('iniciando algoritmo')
 
 while True:
 
     start = False
-    fishing = False
 
     historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
 
@@ -101,7 +106,7 @@ while True:
     candles = API.get_all_candles(active, 300, total_candles_df)
 
     # calcular a média móvel simples (SMA) dos últimos n períodos
-    prices = np.array([candle['close'] for candle in candles])
+    prices = np.array([candle['close'] for candle in candles]).astype(float)
     sma = np.mean(prices)
 
     # comparar o preço atual com a SMA para determinar a tendência de mercado
@@ -122,129 +127,25 @@ while True:
     if new_candle[0] == all_candle_id_five_m[-2]:
         new_candle = []
         start = True
-
-
-    # tomada de decisão para mercado lateralizado
-    # Verificar se o preço está perto da SMA
-    if consolidated_market and mkt:
-        
-        if [i['open'] for i in candles][-1] < sma * 1.01 and [i['open'] for i in candles][-1] > sma * 0.99:
-            
-            # Aguardar a entrada
-            API.set_time_sleep(15 * 60) # 15 minutos
-        
-        # Verificar se o preço não saiu do intervalo
-        if [i['open'] for i in candles][-1] < sma * 1.01 and [i['open'] for i in candles][-1] > sma * 0.99:
-            
-            # Definir sentido da entrada
-            if [i['open'] for i in candles][-1] < sma:
-                
-                print("mercado lateralizado, compra realizada")
-                
-                if value >= 20000:
-                    value = 20000
-                elif value < 2:
-                    value = 2
-                
-                status, fishing = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
-                
-                if fishing:
-                    balance = API.balance(account_type)
-                    fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-                    value = float(format(balance * fraction, '.2f'))
-                else:
-                    value = 2
-                
-                if value >= 20000:
-                    print(f'proxima entrada: R$ 20.000,00')
-                elif value < 2:
-                    print(f'proxima entrada: R$ 2,00')
-                else:
-                    print(f'proxima entrada: R$ {format_currency(value)}')  
-            else:
-                print("mercado lateralizado, venda realizada")
-            
-                if value >= 20000:
-                    value = 20000
-                elif value < 2:
-                    value = 2
-                    
-                status, fishing = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
-                
-                if fishing:
-                    balance = API.balance(account_type)
-                    fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-                    value = float(format(balance * fraction, '.2f'))
-                else:
-                    value = 2
-                
-                if value >= 20000:
-                    print(f'proxima entrada: R$ 20.000,00')
-                elif value < 2:
-                    print(f'proxima entrada: R$ 2,00')
-                else:
-                    print(f'proxima entrada: R$ {format_currency(value)}')
-                    
-    # tomada de decisão para mercado lateralizado na OTC
-    elif consolidated_market and otc:
-        # Verificar se o preço está perto da SMA
-        if [i['open'] for i in candles][-1] < sma * 1.01 and [i['open'] for i in candles][-1] > sma * 0.99:
-            
-            # Aguardar a entrada
-            API.set_time_sleep(15 * 60) # 15 minutos
-        
-        # Verificar se o preço não saiu do intervalo
-        if [i['open'] for i in candles][-1] < sma * 1.01 and [i['open'] for i in candles][-1] > sma * 0.99:
-            
-            # Definir sentido da entrada
-            if [i['open'] for i in candles][-1] < sma:
-                
-                print("mercado lateralizado, compra realizada na OTC")
-                
-                if value >= 20000:
-                    value = 20000
-                elif value < 2:
-                    value = 2
-                
-                status, fishing = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
-                
-                if fishing:
-                    balance = API.balance(account_type)
-                    fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-                    value = float(format(balance * fraction, '.2f'))
-                else:
-                    value = 2
-                
-                if value >= 20000:
-                    print(f'proxima entrada: R$ 20.000,00')
-                elif value < 2:
-                    print(f'proxima entrada: R$ 2,00')
-                else:
-                    print(f'proxima entrada: R$ {format_currency(value)}')  
-            else:
-                print("mercado lateralizado, venda realizada na OTC")
-            
-                if value >= 20000:
-                    value = 20000
-                elif value < 2:
-                    value = 2
-                    
-                status, fishing = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
-                
-                if fishing:
-                    balance = API.balance(account_type)
-                    fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-                    value = float(format(balance * fraction, '.2f'))
-                else:
-                    value = 2
-                
-                if value >= 20000:
-                    print(f'proxima entrada: R$ 20.000,00')
-                elif value < 2:
-                    print(f'proxima entrada: R$ 2,00')
-                else:
-                    print(f'proxima entrada: R$ {format_currency(value)}')
     
+    # Calcular a variação percentual dos preços utilizando o numpy
+    percent_change = (prices[1:] - prices[:-1]) / prices[:-1] * 100
+    
+    # Criar um DataFrame do pandas com as variáveis independentes e dependentes
+    X = pd.DataFrame({'percent_change': percent_change[:-1]}, columns=['percent_change'])
+    y = pd.DataFrame({'direction': np.sign(percent_change[1:])}, columns=['direction'])
+    
+    # Treinar um modelo de regressão linear utilizando a classe LinearRegression do scikit-learn
+    model = LinearRegression()
+    model.fit(X, y)
+    
+    # Utilizar o modelo para prever a direção do próximo candle:
+    next_candle_percent_change = (prices[-1] - prices[-2]) / prices[-2] * 100
+    next_candle_direction = np.sign(next_candle_percent_change)
+    next_candle_prob = model.predict([[next_candle_percent_change]])[0][0]
+    
+    if next_candle_prob < 0:
+        candles, historic_five_minutes = API.change_active(mkt, otc, active_index, total_candles_df)
     
     # tomada decisão pullback no mkt caso contrario seria na otc
     # Verificar se o preço está abaixo da SMA
@@ -255,57 +156,31 @@ while True:
         support = min([i['close'] for i in candles])
         resistance = max([i['close'] for i in candles])
         
-        if trend == 'low' and [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
+        if next_candle_prob >= 0.2 and next_candle_prob <= 1 and [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
             
-            print("Pullback de compra detectado!")
+            print(f"Pullback de compra detectado! probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%")
             
             if value >= 20000:
                 value = 20000
             elif value < 2:
                 value = 2
             
-            status, fishing = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
-            
-            if fishing:
-                balance = API.balance(account_type)
-                fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-                value = float(format(balance * fraction, '.2f'))
-            else:
-                value = 2
-            
-            if value >= 20000:
-                print(f'proxima entrada: R$ 20.000,00')
-            elif value < 2:
-                print(f'proxima entrada: R$ 2,00')
-            else:
-                print(f'proxima entrada: R$ {format_currency(value)}')
-                
+            value = API.probability_on_input(next_candle_prob, account_type, payoff, total_win, total_registers, total_loss)
+            status = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)                
             
         # Se estiver acima, verificar se o preço chegou ao nível de resistência
-        if trend == 'high' and [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
+        elif next_candle_prob >= 0.2 and next_candle_prob <= 1 and [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
                 
-            print("Pullback de venda detectado!")
+            print(f"Pullback de venda detectado! probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%")
             
             if value >= 20000:
                 value = 20000
             elif value < 2:
                 value = 2
-                
-            status, fishing = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
             
-            if fishing:
-                balance = API.balance(account_type)
-                fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-                value = float(format(balance * fraction, '.2f'))
-            else:
-                value = 2
+            value = API.probability_on_input(next_candle_prob, account_type, payoff, total_win, total_registers, total_loss)        
+            status = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
             
-            if value >= 20000:
-                print(f'proxima entrada: R$ 20.000,00')
-            elif value < 2:
-                print(f'proxima entrada: R$ 2,00')
-            else:
-                print(f'proxima entrada: R$ {format_currency(value)}')
     else:
         # estratégia de pullback para o mercado OTC
         max_value = max([i["max"] for i in candles][-2], [i["open"] for i in candles][-2])
@@ -324,54 +199,28 @@ while True:
         # verifica se o preço atual está abaixo do pullback
         preco_atual = precos[-1, 1]
         
-        if [i['close'] for i in candles][-1] < min_value + threshold and preco_atual < pullback and preco_atual < sma and start:
+        if next_candle_prob >= 0.2 and next_candle_prob <= 1 and [i['close'] for i in candles][-1] < min_value + threshold and preco_atual < pullback and preco_atual < sma and start:
             
-            print("Pullback OTC de compra detectado!")
+            print(f"Pullback OTC de compra detectado! probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%")
             
             if value >= 20000:
                 value = 20000
             elif value < 2:
                 value = 2
-                
-            status, fishing = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
             
-            if fishing:
-                balance = API.balance(account_type)
-                fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-                value = float(format(balance * fraction, '.2f'))
-            else:
-                value = 2
-            
-            if value >= 20000:
-                print(f'proxima entrada: R$ 20.000,00')
-            elif value < 2:
-                print(f'proxima entrada: R$ 2,00')
-            else:
-                print(f'proxima entrada: R$ {format_currency(value)}')
+            value = API.probability_on_input(next_candle_prob, account_type, payoff, total_win, total_registers, total_loss)
+            status = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
                 
-        elif [i['close'] for i in candles][-1] > max_value - threshold and preco_atual > pullback and preco_atual > sma and start:
+        elif next_candle_prob >= 0.2 and next_candle_prob <= 1 and [i['close'] for i in candles][-1] > max_value - threshold and preco_atual > pullback and preco_atual > sma and start:
 
-            print("Pullback OTC de venda detectado!")
+            print(f"Pullback OTC de venda detectado! probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%")
             
             if value >= 20000:
                 value = 20000
             elif value < 2:
                 value = 2
-                    
-            status, fishing = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type, fishing)
             
-            if fishing:
-                balance = API.balance(account_type)
-                fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-                value = float(format(balance * fraction, '.2f'))
-            else:
-                value = 2
-            
-            if value >= 20000:
-                print(f'proxima entrada: R$ 20.000,00')
-            elif value < 2:
-                print(f'proxima entrada: R$ 2,00')
-            else:
-                print(f'proxima entrada: R$ {format_currency(value)}')
+            value = API.probability_on_input(next_candle_prob, account_type, payoff, total_win, total_registers, total_loss)  
+            status = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
         
     API.set_time_sleep(1)

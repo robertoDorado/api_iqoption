@@ -113,7 +113,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
     
-    def call_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL, fishing=False):
+    def call_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
         if float(format(self.balance(account_type), '.2f')) >= value:
             status, id = self.call_or_put(value, active, 'call', 1)
         else:
@@ -134,8 +134,6 @@ class BOT_IQ_Option:
                 if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
-                elif len(wins) >= 1:
-                    fishing = True
             else:
                 stop_loss.append(status)
                 print(f'total loss: {len(stop_loss)}')
@@ -145,9 +143,9 @@ class BOT_IQ_Option:
                 if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
                     exit() 
-        return status, fishing
+        return status
                     
-    def put_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL, fishing=False):
+    def put_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
         if float(format(self.balance(account_type), '.2f')) >= value:
             status, id = self.call_or_put(value, active, 'put', 1)
         else:
@@ -168,8 +166,6 @@ class BOT_IQ_Option:
                 if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
-                elif len(wins) >= 1:
-                    fishing = True
                 
             else:
                 stop_loss.append(status)
@@ -180,10 +176,36 @@ class BOT_IQ_Option:
                 if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
                     exit()
-        return status, fishing
+        return status
     
     def closest(self, lst, K): 
         return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
     
     def kelly(self, b, p, q):
         return (b * p - q) / b
+    
+    def probability_on_input(self, next_candle_prob, account_type, payoff, total_win, total_registers, total_loss):
+        if next_candle_prob >= 0.2 and next_candle_prob < 0.5:
+            value = 2
+        elif next_candle_prob >= 0.5 and next_candle_prob < 0.8:
+            balance = self.balance(account_type)
+            fraction = self.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+            value = float(format(balance * fraction, '.2f')) / 4
+        elif next_candle_prob >= 0.8 and next_candle_prob <= 1:
+            balance = self.balance(account_type)
+            fraction = self.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+            value = float(format(balance * fraction, '.2f'))
+        return value
+    
+    def change_active(self, mkt, otc, active_index, total_candles_df):
+        active_index += 1
+        if mkt and active_index > 6:
+            active_index = 1
+            
+        if otc and active_index > 82:
+            active_index = 76
+            
+        active = self.get_all_actives()[active_index]
+        candles = self.get_all_candles(active, 300, total_candles_df)
+        historic_five_minutes = self.get_realtime_candles(active, 300, total_candles_df)
+        return candles, historic_five_minutes
