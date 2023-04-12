@@ -120,30 +120,32 @@ class BOT_IQ_Option:
             print('saldo insuficiente')
             exit()
         
-        print(f'compra: R$ {format_currency(value)}')
-        
         if status:
-            status, check_value = self.check_win_or_loss(id, 'v4')
+            print(f'compra: R$ {format_currency(value)}')
+            status_check, check_value = self.check_win_or_loss(id, 'v4')
             
-            if status == 'win':
-                wins.append(status)
+            if status_check == 'win':
+                wins.append(status_check)
                 print(f'total wins: {len(wins)}')
                 register_value = value * self.get_profit(active, active_type)
-                persist_data(status, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
+                persist_data(status_check, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
                 
                 if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
             else:
-                stop_loss.append(status)
+                stop_loss.append(status_check)
                 print(f'total loss: {len(stop_loss)}')
                 register_value = value
-                persist_data(status, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
+                persist_data(status_check, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
                 
                 if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
-                    exit() 
-        return status
+                    exit()
+        else:
+            print(f'ativo {active} indisponível')
+            
+        return status, status_check
                     
     def put_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
         if float(format(self.balance(account_type), '.2f')) >= value:
@@ -152,31 +154,33 @@ class BOT_IQ_Option:
             print('saldo insuficiente')
             exit()
         
-        print(f'venda: R$ {format_currency(value)}')
-        
         if status:
-            status, check_value = self.check_win_or_loss(id, 'v4')
+            print(f'venda: R$ {format_currency(value)}')
+            status_check, check_value = self.check_win_or_loss(id, 'v4')
             
-            if status == 'win':
-                wins.append(status)
+            if status_check == 'win':
+                wins.append(status_check)
                 print(f'total wins: {len(wins)}')
                 register_value = value * self.get_profit(active, active_type)
-                persist_data(status, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
+                persist_data(status_check, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
                 
                 if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
                 
             else:
-                stop_loss.append(status)
+                stop_loss.append(status_check)
                 print(f'total loss: {len(stop_loss)}')
                 register_value = value
-                persist_data(status, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
+                persist_data(status_check, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
                 
                 if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
                     exit()
-        return status
+        else:
+            print(f'ativo {active} indisponível')
+            
+        return status, status_check
     
     def closest(self, lst, K): 
         return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
@@ -199,10 +203,10 @@ class BOT_IQ_Option:
     
     def change_active(self, mkt, otc, active_index):
         active_index += 1
-        if mkt and active_index > 4:
+        if mkt and active_index > 6:
             active_index = 1
             
-        if otc and active_index > 82:
+        if otc and active_index > 81:
             active_index = 76
             
         active = self.get_all_actives()[active_index]
