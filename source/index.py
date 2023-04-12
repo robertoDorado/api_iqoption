@@ -12,8 +12,8 @@ warnings.filterwarnings('ignore')
 account_type = "PRACTICE"
 API = BOT_IQ_Option(account_type)
 
-goal_win = 1000
-goal_loss = 1000
+goal_win = 5
+goal_loss = 1
     
 if API.check_my_connection() == False:
     print('erro na conexão')
@@ -31,8 +31,8 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = True
-mkt = False
+otc = False
+mkt = True
 
 if otc:
     active_index = 76
@@ -95,7 +95,7 @@ while True:
 
     start = False
 
-    historic_five_minutes = API.get_realtime_candles(active, 300, total_candles)
+    historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
 
     historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
                               else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
@@ -144,8 +144,15 @@ while True:
     next_candle_direction = np.sign(next_candle_percent_change)
     next_candle_prob = model.predict([[next_candle_percent_change]])[0][0]
     
-    if next_candle_prob < 0:
-        candles, historic_five_minutes = API.change_active(mkt, otc, active_index, total_candles_df)
+    if next_candle_prob < 0.2:
+        active, active_index = API.change_active(mkt, otc, active_index)
+        historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
+        historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
+        else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+        'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+        'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+        for i in historic_five_minutes]
+        candles = API.get_all_candles(active, 300, total_candles_df)
     
     # tomada decisão pullback no mkt caso contrario seria na otc
     # Verificar se o preço está abaixo da SMA
@@ -166,7 +173,8 @@ while True:
                 value = 2
             
             value = API.probability_on_input(next_candle_prob, account_type, payoff, total_win, total_registers, total_loss)
-            status = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)                
+            API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
+            API.set_time_sleep(900)             
             
         # Se estiver acima, verificar se o preço chegou ao nível de resistência
         elif next_candle_prob >= 0.2 and next_candle_prob <= 1 and [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
@@ -179,7 +187,8 @@ while True:
                 value = 2
             
             value = API.probability_on_input(next_candle_prob, account_type, payoff, total_win, total_registers, total_loss)        
-            status = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
+            API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
+            API.set_time_sleep(900)
             
     else:
         # estratégia de pullback para o mercado OTC
@@ -209,7 +218,8 @@ while True:
                 value = 2
             
             value = API.probability_on_input(next_candle_prob, account_type, payoff, total_win, total_registers, total_loss)
-            status = API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
+            API.call_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
+            API.set_time_sleep(900)
                 
         elif next_candle_prob >= 0.2 and next_candle_prob <= 1 and [i['close'] for i in candles][-1] > max_value - threshold and preco_atual > pullback and preco_atual > sma and start:
 
@@ -221,6 +231,7 @@ while True:
                 value = 2
             
             value = API.probability_on_input(next_candle_prob, account_type, payoff, total_win, total_registers, total_loss)  
-            status = API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
+            API.put_decision(value, active, wins, stop_loss, active_type, payoff, goal_win, goal_loss, account_type)
+            API.set_time_sleep(900)
         
     API.set_time_sleep(1)

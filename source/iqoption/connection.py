@@ -185,27 +185,25 @@ class BOT_IQ_Option:
         return (b * p - q) / b
     
     def probability_on_input(self, next_candle_prob, account_type, payoff, total_win, total_registers, total_loss):
+        balance = self.balance(account_type)
+        fraction = self.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+        value = float(format(balance * fraction, '.2f'))
+        
         if next_candle_prob >= 0.2 and next_candle_prob < 0.5:
-            value = 2
+            value /= 8
         elif next_candle_prob >= 0.5 and next_candle_prob < 0.8:
-            balance = self.balance(account_type)
-            fraction = self.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-            value = float(format(balance * fraction, '.2f')) / 4
+            value /= 4
         elif next_candle_prob >= 0.8 and next_candle_prob <= 1:
-            balance = self.balance(account_type)
-            fraction = self.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-            value = float(format(balance * fraction, '.2f'))
+            value *= 1
         return value
     
-    def change_active(self, mkt, otc, active_index, total_candles_df):
+    def change_active(self, mkt, otc, active_index):
         active_index += 1
-        if mkt and active_index > 6:
+        if mkt and active_index > 4:
             active_index = 1
             
         if otc and active_index > 82:
             active_index = 76
             
         active = self.get_all_actives()[active_index]
-        candles = self.get_all_candles(active, 300, total_candles_df)
-        historic_five_minutes = self.get_realtime_candles(active, 300, total_candles_df)
-        return candles, historic_five_minutes
+        return active, active_index
