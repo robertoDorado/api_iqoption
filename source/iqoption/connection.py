@@ -144,6 +144,8 @@ class BOT_IQ_Option:
                     exit()
         else:
             print(f'ativo {active} indisponível')
+            status = False
+            status_check = ''
             
         return status, status_check
                     
@@ -179,6 +181,8 @@ class BOT_IQ_Option:
                     exit()
         else:
             print(f'ativo {active} indisponível')
+            status = False
+            status_check = ''
             
         return status, status_check
     
@@ -189,16 +193,11 @@ class BOT_IQ_Option:
         return (b * p - q) / b
     
     def probability_on_input(self, next_candle_prob, account_type, payoff, total_win, total_registers, total_loss):
-        balance = self.balance(account_type)
-        fraction = self.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-        value = float(format(balance * fraction, '.2f'))
         
-        if next_candle_prob >= 0.2 and next_candle_prob < 0.5:
-            value /= 8
-        elif next_candle_prob >= 0.5 and next_candle_prob < 0.8:
-            value /= 4
-        elif next_candle_prob >= 0.8 and next_candle_prob <= 1:
-            value *= 1
+        if next_candle_prob >= 0.7 and next_candle_prob <= 1:
+            balance = self.balance(account_type)
+            fraction = self.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+            value = float(format(balance * fraction, '.2f'))
         return value
     
     def change_active(self, mkt, otc, active_index):
