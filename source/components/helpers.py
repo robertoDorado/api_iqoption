@@ -15,7 +15,7 @@ def format_date():
 def format_datetime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-def persist_data(status: str, active: str, total_value: float, payoff: float, account_type: str, balance: float):
+def persist_data(status, active, total_value, payoff, account_type, balance):
     query = ("INSERT INTO operations (active, status, total_value, payoff, date, date_time, account_type, balance) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
     data = (active, status, total_value, payoff, format_date(), format_datetime(), account_type, balance)
     cursor.execute(query, data)
@@ -23,24 +23,24 @@ def persist_data(status: str, active: str, total_value: float, payoff: float, ac
     return
 
 
-def count_registers(account_type: str):
+def count_registers(account_type):
     query = ("SELECT COUNT(*) as registers FROM operations WHERE date = %s AND account_type = %s")
     cursor.execute(query, (format_date(), account_type))
     return cursor.fetchone()
 
 
-def count_win_registers(account_type: str):
+def count_win_registers(account_type):
     query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'win' AND date = %s AND account_type = %s")
     cursor.execute(query, (format_date(), account_type))
     return cursor.fetchone()
 
 
-def count_loss_registers(account_type: str):
+def count_loss_registers(account_type):
     query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'loose' AND date = %s AND account_type = %s")
     cursor.execute(query, (format_date(), account_type))
     return cursor.fetchone()
 
 
-def format_currency(value: float):
+def format_currency(value):
     locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8') # definir o idioma para português do Brasil
     return locale.currency(value, grouping=True, symbol=None)
