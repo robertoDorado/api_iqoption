@@ -1,5 +1,4 @@
 # _*_ coding: utf-8 _*_
-from asyncio.windows_events import NULL
 from iqoption.connection import BOT_IQ_Option
 from datetime import datetime
 import numpy as np
