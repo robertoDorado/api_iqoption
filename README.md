@@ -1,1 +1,1 @@
-BOT IQ Option em desenvolvimento
+BOT IQ Option
