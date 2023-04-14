@@ -112,7 +112,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
     
-    def call_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
+    def call_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=None):
         if float(format(self.balance(account_type), '.2f')) >= value:
             status, id = self.call_or_put(value, active, 'call', 1)
         else:
@@ -148,7 +148,7 @@ class BOT_IQ_Option:
             
         return status, status_check
                     
-    def put_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=NULL):
+    def put_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=None):
         if float(format(self.balance(account_type), '.2f')) >= value:
             status, id = self.call_or_put(value, active, 'put', 1)
         else:
