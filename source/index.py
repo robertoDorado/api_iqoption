@@ -31,8 +31,8 @@ high_tendencie = False
 low_tendencie = False
 consolidated_market = False
 
-otc = True
-mkt = False
+otc = False
+mkt = True
 
 if otc:
     active_index = 76
@@ -89,8 +89,10 @@ if second < 10:
 elif second >= 10:
     seconds = second
 
+time_exp = 0
+
 print(f'minha conta e {account_type}: R$ {format_currency(balance)}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}X{goal_loss}')
-print('iniciando algoritmo')
+print('processando algoritmo')
 
 while True:
 
@@ -155,6 +157,10 @@ while True:
                                   'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
                                  for i in historic_five_minutes]
         candles = API.get_all_candles(active, 300, total_candles_df)
+    
+    time_exp += 1
+    if time_exp >= 36000:
+        exit()
 
     # tomada decisão pullback no mkt caso contrario seria na otc
     # Verificar se o preço está abaixo da SMA
