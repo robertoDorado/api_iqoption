@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 from iqoptionapi.stable_api import IQ_Option
 import time
 from datetime import datetime
