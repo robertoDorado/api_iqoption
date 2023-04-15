@@ -149,7 +149,7 @@ while True:
     next_candle_prob = model.predict([[next_candle_percent_change]])[0][0]
 
     if next_candle_prob < perc_prob:
-        active, active_index = API.change_active(mkt, otc, active_index)
+        active, active_index = API.change_active(mkt, otc)
         historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
         historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
                                   else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
@@ -186,7 +186,7 @@ while True:
             API.call_decision(value, active, wins, stop_loss, active_type,
                                                      payoff, goal_win, goal_loss, account_type)
 
-            active, active_index = API.change_active(mkt, otc, active_index)
+            active, active_index = API.change_active(mkt, otc)
             historic_five_minutes = API.get_realtime_candles(
                 active, 300, total_candles_df)
             historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
@@ -212,7 +212,7 @@ while True:
             API.put_decision(value, active, wins, stop_loss, active_type,
                                                     payoff, goal_win, goal_loss, account_type)
 
-            active, active_index = API.change_active(mkt, otc, active_index)
+            active, active_index = API.change_active(mkt, otc)
             historic_five_minutes = API.get_realtime_candles(
                 active, 300, total_candles_df)
             historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
@@ -257,7 +257,7 @@ while True:
             API.call_decision(value, active, wins, stop_loss, active_type,
                                                      payoff, goal_win, goal_loss, account_type)
 
-            active, active_index = API.change_active(mkt, otc, active_index)
+            active, active_index = API.change_active(mkt, otc)
             historic_five_minutes = API.get_realtime_candles(
                 active, 300, total_candles_df)
             historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
@@ -282,7 +282,7 @@ while True:
             API.put_decision(value, active, wins, stop_loss, active_type,
                                                     payoff, goal_win, goal_loss, account_type)
 
-            active, active_index = API.change_active(mkt, otc, active_index)
+            active, active_index = API.change_active(mkt, otc)
             historic_five_minutes = API.get_realtime_candles(
                 active, 300, total_candles_df)
             historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']

@@ -3,34 +3,36 @@ import time
 from datetime import datetime
 from pytz import timezone
 from components.helpers import *
+import random
+
 
 class BOT_IQ_Option:
-    
+
     def __init__(self, account_type):
         self.email = 'robertodorado7@gmail.com'
         self.password = 'Rob@19101910'
         self.instance = IQ_Option(self.email, self.password, account_type)
         self.current_timestamp = time.time()
-    
+
     def conn(self):
         self.instance.connect()
         return self.instance.check_connect()
-    
+
     def check_my_connection(self):
         return self.conn()
-    
+
     def account_type(self, type):
         return self.instance.change_balance(type)
-    
+
     def get_instance(self):
         return self.instance
-    
+
     def get_profile_data(self, key):
         profile = self.instance.get_profile_ansyc()
         return profile[key]
-    
+
     def get_all_candles(self, active='EURUSD', seconds=60, quant=3):
-        
+
         try:
             dictionary_actives = self.instance.get_all_ACTIVES_OPCODE()
             for actives in list(dictionary_actives.keys()):
@@ -38,48 +40,47 @@ class BOT_IQ_Option:
                     return self.instance.get_candles(active, seconds, quant, self.current_timestamp)
         except Exception:
             print('is not a valid active')
-        
-            
+
     def get_current_timestamp(self):
         return self.current_timestamp
-    
+
     def convert_timestamp(self, timestamp=time.time(), tz='America/Sao_Paulo'):
         return datetime.fromtimestamp(timestamp, timezone(tz))
-    
+
     def merge_candles(self, candle_a, candle_b):
         return candle_a + candle_b
-    
+
     def set_time_sleep(self, value):
         return time.sleep(value)
-    
+
     def get_ticks_real_time(self, active='EURUSD', size=60, maxdict=1):
-        
+
         self.instance.start_candles_stream(active, size, maxdict)
         ticks = self.instance.get_realtime_candles(active, size)
-        
+
         self.instance.stop_candles_stream(active, size)
         return ticks
-    
+
     def get_mood_traders(self, active='EURUSD'):
-        
+
         self.instance.start_mood_stream(active)
         mood = self.instance.get_traders_mood(active)
-        
+
         self.instance.stop_mood_stream(active)
         return mood
-    
+
     def get_all_actives(self, act=True):
-        
+
         if act:
-            return {code:act for act,code in self.instance.get_all_ACTIVES_OPCODE().items()}
+            return {code: act for act, code in self.instance.get_all_ACTIVES_OPCODE().items()}
         else:
             return self.instance.get_all_ACTIVES_OPCODE()
-    
+
     def call_or_put(self, price, active, action, timeframe):
         return self.instance.buy(price, active, action, timeframe)
-    
+
     def check_win_or_loss(self, id, version):
-        
+
         try:
             if version == 'v3':
                 return self.instance.check_win_v3(id)
@@ -87,48 +88,49 @@ class BOT_IQ_Option:
                 return self.instance.check_win_v4(id)
         except Exception:
             print('version or id is not available')
-            
+
     def call_or_put_digital(self, price, active, action, timeframe):
         return self.instance.buy_digital_spot(active, price, action, timeframe)
-    
+
     def check_win_or_loss_digital(self, id, version='v2'):
-        
+
         try:
             if version == 'v2':
                 return self.instance.check_win_digital(id)
         except Exception as error:
             print(f'version error: {error}')
-            
+
     def get_profit(self, active, type):
         return self.instance.get_all_profit()[active][type]
-    
+
     def balance(self, type_balance):
         self.instance.change_balance(type_balance)
         return self.instance.get_balance()
-    
+
     def get_realtime_candles(self, active, size, maxdict):
         self.instance.start_candles_stream(active, size, maxdict)
         candles = self.instance.get_realtime_candles(active, size)
         self.instance.stop_candles_stream(active, size)
         return candles
-    
+
     def call_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=None):
         if float(format(self.balance(account_type), '.2f')) >= value:
             status, id = self.call_or_put(value, active, 'call', 1)
         else:
             print('saldo insuficiente')
             exit()
-        
+
         if status:
             print(f'compra: R$ {format_currency(value)}')
             status_check, check_value = self.check_win_or_loss(id, 'v4')
-            
+
             if status_check == 'win':
                 wins.append(status_check)
                 print(f'total wins: {len(wins)}')
                 register_value = value * self.get_profit(active, active_type)
-                persist_data(status_check, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
-                
+                persist_data(status_check, active, float(format(register_value, '.2f')),
+                             payoff, account_type, float(format(self.balance(account_type), '.2f')))
+
                 if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
@@ -136,8 +138,9 @@ class BOT_IQ_Option:
                 stop_loss.append(status_check)
                 print(f'total loss: {len(stop_loss)}')
                 register_value = value
-                persist_data(status_check, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
-                
+                persist_data(status_check, active, float(format(register_value, '.2f')),
+                             payoff, account_type, float(format(self.balance(account_type), '.2f')))
+
                 if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
                     exit()
@@ -145,36 +148,38 @@ class BOT_IQ_Option:
             print(f'ativo {active} indisponível')
             status = False
             status_check = ''
-            
+
         return status, status_check
-                    
+
     def put_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=None):
         if float(format(self.balance(account_type), '.2f')) >= value:
             status, id = self.call_or_put(value, active, 'put', 1)
         else:
             print('saldo insuficiente')
             exit()
-        
+
         if status:
             print(f'venda: R$ {format_currency(value)}')
             status_check, check_value = self.check_win_or_loss(id, 'v4')
-            
+
             if status_check == 'win':
                 wins.append(status_check)
                 print(f'total wins: {len(wins)}')
                 register_value = value * self.get_profit(active, active_type)
-                persist_data(status_check, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
-                
+                persist_data(status_check, active, float(format(register_value, '.2f')),
+                             payoff, account_type, float(format(self.balance(account_type), '.2f')))
+
                 if len(wins) >= goal_win:
                     print('meta batida')
                     exit()
-                
+
             else:
                 stop_loss.append(status_check)
                 print(f'total loss: {len(stop_loss)}')
                 register_value = value
-                persist_data(status_check, active, float(format(register_value, '.2f')), payoff, account_type, float(format(self.balance(account_type), '.2f')))
-                
+                persist_data(status_check, active, float(format(register_value, '.2f')),
+                             payoff, account_type, float(format(self.balance(account_type), '.2f')))
+
                 if len(stop_loss) >= goal_loss:
                     print('stop loss acionado')
                     exit()
@@ -182,30 +187,34 @@ class BOT_IQ_Option:
             print(f'ativo {active} indisponível')
             status = False
             status_check = ''
-            
+
         return status, status_check
-    
-    def closest(self, lst, K): 
-        return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
-    
+
+    def closest(self, lst, K):
+        return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - K))]
+
     def kelly(self, b, p, q):
         return (b * p - q) / b
-    
+
     def probability_on_input(self, next_candle_prob, account_type, payoff, total_win, total_registers, total_loss, perc_prob):
-        
+
         if next_candle_prob >= perc_prob and next_candle_prob <= 1:
             balance = self.balance(account_type)
-            fraction = self.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+            fraction = self.kelly(payoff, float(format(
+                total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
             value = float(format(balance * fraction, '.2f'))
         return value
-    
-    def change_active(self, mkt, otc, active_index):
-        active_index += 1
-        if mkt and active_index > 6:
-            active_index = 1
-            
-        if otc and active_index > 81:
-            active_index = 76
-            
-        active = self.get_all_actives()[active_index]
-        return active, active_index
+
+    def change_active(self, mkt, otc):
+
+        if mkt:
+            active_index_mkt = [1, 2, 3, 4, 5, 6, 7, 8, 10, 31, 32, 33, 34, 35,
+                                36, 37, 38, 40, 41, 45, 46, 48, 49, 50, 51, 52, 53, 54, 72, 74, 75]
+            random_index = random.randint(0, len(active_index_mkt) - 1)
+
+        if otc:
+            active_index_otc = [76, 77, 78, 79, 80, 81, 84, 85, 86]
+            random_index = random.randint(0, len(active_index_otc) - 1)
+
+        active = self.get_all_actives()[random_index]
+        return active, random_index
