@@ -191,9 +191,9 @@ class BOT_IQ_Option:
     def kelly(self, b, p, q):
         return (b * p - q) / b
     
-    def probability_on_input(self, next_candle_prob, account_type, payoff, total_win, total_registers, total_loss):
+    def probability_on_input(self, next_candle_prob, account_type, payoff, total_win, total_registers, total_loss, perc_prob):
         
-        if next_candle_prob >= 0.7 and next_candle_prob <= 1:
+        if next_candle_prob >= perc_prob and next_candle_prob <= 1:
             balance = self.balance(account_type)
             fraction = self.kelly(payoff, float(format(total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
             value = float(format(balance * fraction, '.2f'))
