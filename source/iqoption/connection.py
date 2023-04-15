@@ -114,7 +114,7 @@ class BOT_IQ_Option:
         return candles
 
     def call_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=None):
-        if float(format(self.balance(account_type), '.2f')) >= value:
+        if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'call', 1)
         else:
             print('saldo insuficiente')
@@ -145,14 +145,14 @@ class BOT_IQ_Option:
                     print('stop loss acionado')
                     exit()
         else:
-            print(f'ativo {active} indisponível')
+            print(f'ativo {active} indisponivel')
             status = False
             status_check = ''
 
         return status, status_check
 
     def put_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=None):
-        if float(format(self.balance(account_type), '.2f')) >= value:
+        if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'put', 1)
         else:
             print('saldo insuficiente')
@@ -184,7 +184,7 @@ class BOT_IQ_Option:
                     print('stop loss acionado')
                     exit()
         else:
-            print(f'ativo {active} indisponível')
+            print(f'ativo {active} indisponivel')
             status = False
             status_check = ''
 
@@ -198,11 +198,18 @@ class BOT_IQ_Option:
 
     def probability_on_input(self, next_candle_prob, account_type, payoff, total_win, total_registers, total_loss, perc_prob):
 
+        value = 2
         if next_candle_prob >= perc_prob and next_candle_prob <= 1:
             balance = self.balance(account_type)
             fraction = self.kelly(payoff, float(format(
                 total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-            value = float(format(balance * fraction, '.2f'))
+            
+            if float(format(balance * fraction, '.2f')) >= 20000:
+                return 20000
+            elif float(format(balance * fraction, '.2f')) < 2:
+                return 2
+            else:
+                return float(format(balance * fraction, '.2f'))    
         return value
 
     def change_active(self, mkt, otc):
@@ -211,10 +218,11 @@ class BOT_IQ_Option:
             active_index_mkt = [1, 2, 3, 4, 5, 6, 7, 8, 10, 31, 32, 33, 34, 35,
                                 36, 37, 38, 40, 41, 45, 46, 48, 49, 50, 51, 52, 53, 54, 72, 74, 75]
             random_index = random.randint(0, len(active_index_mkt) - 1)
+            active = self.get_all_actives()[active_index_mkt[random_index]]
 
         if otc:
             active_index_otc = [76, 77, 78, 79, 80, 81, 84, 85, 86]
             random_index = random.randint(0, len(active_index_otc) - 1)
+            active = self.get_all_actives()[active_index_otc[random_index]]
 
-        active = self.get_all_actives()[random_index]
-        return active, random_index
+        return active

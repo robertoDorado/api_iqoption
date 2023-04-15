@@ -149,7 +149,7 @@ while True:
     next_candle_prob = model.predict([[next_candle_percent_change]])[0][0]
 
     if next_candle_prob < perc_prob:
-        active, active_index = API.change_active(mkt, otc)
+        active = API.change_active(mkt, otc)
         historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
         historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
                                   else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
@@ -176,17 +176,13 @@ while True:
             print(
                 f"Pullback de compra detectado! probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%")
 
-            if value >= 20000:
-                value = 20000
-            elif value < 2:
-                value = 2
-
             value = API.probability_on_input(
                 next_candle_prob, account_type, payoff, total_win, total_registers, total_loss, perc_prob)
+            print(f'tentativa de compra R$ {format_currency(value)}')
             API.call_decision(value, active, wins, stop_loss, active_type,
                                                      payoff, goal_win, goal_loss, account_type)
 
-            active, active_index = API.change_active(mkt, otc)
+            active = API.change_active(mkt, otc)
             historic_five_minutes = API.get_realtime_candles(
                 active, 300, total_candles_df)
             historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
@@ -202,17 +198,13 @@ while True:
             print(
                 f"Pullback de venda detectado! no ativo {active} probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%")
 
-            if value >= 20000:
-                value = 20000
-            elif value < 2:
-                value = 2
-
             value = API.probability_on_input(
                 next_candle_prob, account_type, payoff, total_win, total_registers, total_loss, perc_prob)
+            print(f'tentativa de venda R$ {format_currency(value)}')
             API.put_decision(value, active, wins, stop_loss, active_type,
                                                     payoff, goal_win, goal_loss, account_type)
 
-            active, active_index = API.change_active(mkt, otc)
+            active = API.change_active(mkt, otc)
             historic_five_minutes = API.get_realtime_candles(
                 active, 300, total_candles_df)
             historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
@@ -247,17 +239,13 @@ while True:
             print(
                 f"Pullback OTC de compra detectado! no ativo {active} probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%")
 
-            if value >= 20000:
-                value = 20000
-            elif value < 2:
-                value = 2
-
             value = API.probability_on_input(
                 next_candle_prob, account_type, payoff, total_win, total_registers, total_loss, perc_prob)
+            print(f'tentativa de compra R$ {format_currency(value)}')
             API.call_decision(value, active, wins, stop_loss, active_type,
-                                                     payoff, goal_win, goal_loss, account_type)
+                                                        payoff, goal_win, goal_loss, account_type)
 
-            active, active_index = API.change_active(mkt, otc)
+            active = API.change_active(mkt, otc)
             historic_five_minutes = API.get_realtime_candles(
                 active, 300, total_candles_df)
             historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
@@ -272,17 +260,13 @@ while True:
             print(
                 f"Pullback OTC de venda detectado! no ativo {active} probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%")
 
-            if value >= 20000:
-                value = 20000
-            elif value < 2:
-                value = 2
-
             value = API.probability_on_input(
                 next_candle_prob, account_type, payoff, total_win, total_registers, total_loss, perc_prob)
+            print(f'tentativa de venda R$ {format_currency(value)}')
             API.put_decision(value, active, wins, stop_loss, active_type,
                                                     payoff, goal_win, goal_loss, account_type)
 
-            active, active_index = API.change_active(mkt, otc)
+            active = API.change_active(mkt, otc)
             historic_five_minutes = API.get_realtime_candles(
                 active, 300, total_candles_df)
             historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
