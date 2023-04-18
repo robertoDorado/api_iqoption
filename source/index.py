@@ -178,7 +178,8 @@ while True:
         candles = API.get_all_candles(active, 300, total_candles_df)
         continue
 
-    print(f'rastreando... {active}')
+    if start:
+        print(f'rastreando... {active}')
 
     # tomada decisão pullback no mkt caso contrario seria na otc
     # Verificar se o preço está abaixo da SMA
@@ -197,16 +198,18 @@ while True:
             value = API.probability_on_input(
                 account_type, payoff, total_win, total_registers, total_loss)
             print(f'tentativa de compra R$ {format_currency(value)}')
-            status, status_check = API.call_decision(value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-            
+            status, status_check = API.call_decision(
+                value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+
             if status_check != 'win':
                 active = API.change_active(mkt, otc)
-                historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
+                historic_five_minutes = API.get_realtime_candles(
+                    active, 300, total_candles_df)
                 historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                        else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                        'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                        'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                        for i in historic_five_minutes]
+                                          else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                                          'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                                          'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                                         for i in historic_five_minutes]
                 candles = API.get_all_candles(active, 300, total_candles_df)
 
         # Se estiver acima, verificar se o preço chegou ao nível de resistência
@@ -218,16 +221,18 @@ while True:
             value = API.probability_on_input(
                 account_type, payoff, total_win, total_registers, total_loss)
             print(f'tentativa de venda R$ {format_currency(value)}')
-            status, status_check = API.put_decision(value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-            
+            status, status_check = API.put_decision(
+                value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+
             if status_check != 'win':
                 active = API.change_active(mkt, otc)
-                historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
+                historic_five_minutes = API.get_realtime_candles(
+                    active, 300, total_candles_df)
                 historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                        else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                        'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                        'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                        for i in historic_five_minutes]
+                                          else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                                          'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                                          'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                                         for i in historic_five_minutes]
                 candles = API.get_all_candles(active, 300, total_candles_df)
 
     else:
@@ -258,16 +263,18 @@ while True:
             value = API.probability_on_input(
                 account_type, payoff, total_win, total_registers, total_loss)
             print(f'tentativa de compra R$ {format_currency(value)}')
-            status, status_check = API.call_decision(value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-            
+            status, status_check = API.call_decision(
+                value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+
             if status_check != 'win':
                 active = API.change_active(mkt, otc)
-                historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
+                historic_five_minutes = API.get_realtime_candles(
+                    active, 300, total_candles_df)
                 historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                        else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                        'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                        'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                        for i in historic_five_minutes]
+                                          else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                                          'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                                          'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                                         for i in historic_five_minutes]
                 candles = API.get_all_candles(active, 300, total_candles_df)
 
         elif [i['close'] for i in candles][-1] > max_value - threshold and preco_atual > pullback and preco_atual > sma and start:
@@ -278,16 +285,18 @@ while True:
             value = API.probability_on_input(
                 account_type, payoff, total_win, total_registers, total_loss)
             print(f'tentativa de venda R$ {format_currency(value)}')
-            status, status_check = API.put_decision(value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-            
+            status, status_check = API.put_decision(
+                value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+
             if status_check != 'win':
                 active = API.change_active(mkt, otc)
-                historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
+                historic_five_minutes = API.get_realtime_candles(
+                    active, 300, total_candles_df)
                 historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                        else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                        'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                        'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                        for i in historic_five_minutes]
+                                          else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                                          'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                                          'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                                         for i in historic_five_minutes]
                 candles = API.get_all_candles(active, 300, total_candles_df)
 
     API.set_time_sleep(1)
