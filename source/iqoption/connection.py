@@ -8,9 +8,9 @@ import random
 
 class BOT_IQ_Option:
 
-    def __init__(self, account_type):
-        self.email = 'robertodorado7@gmail.com'
-        self.password = 'Rob@19101910'
+    def __init__(self, account_type, email, password):
+        self.email = email
+        self.password = password
         self.instance = IQ_Option(self.email, self.password, account_type)
         self.current_timestamp = time.time()
 
@@ -113,7 +113,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
 
-    def call_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=None):
+    def call_decision(self, value, active, wins=[], stop_loss=[], active_type='turbo', payoff=0, goal_win=2, goal_loss=1, account_type=None):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'call', 1)
         else:
@@ -151,7 +151,7 @@ class BOT_IQ_Option:
 
         return status, status_check
 
-    def put_decision(self, value, active, wins=[], stop_loss=[], active_type=False, payoff=0, goal_win=2, goal_loss=1, account_type=None):
+    def put_decision(self, value, active, wins=[], stop_loss=[], active_type='turbo', payoff=0, goal_win=2, goal_loss=1, account_type=None):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'put', 1)
         else:
@@ -196,27 +196,25 @@ class BOT_IQ_Option:
     def kelly(self, b, p, q):
         return (b * p - q) / b
 
-    def probability_on_input(self, next_candle_prob, account_type, payoff, total_win, total_registers, total_loss, perc_prob):
+    def probability_on_input(self, account_type, payoff, total_win, total_registers, total_loss):
 
-        value = 2
-        if next_candle_prob >= perc_prob and next_candle_prob <= 1:
-            balance = self.balance(account_type)
-            fraction = self.kelly(payoff, float(format(
-                total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-            
-            if float(format(balance * fraction, '.2f')) >= 20000:
-                return 20000
-            elif float(format(balance * fraction, '.2f')) < 2:
-                return 2
-            else:
-                return float(format(balance * fraction, '.2f'))    
-        return value
+        balance = self.balance(account_type)
+        fraction = self.kelly(payoff, float(format(
+            total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
+
+        value = float(format(balance * fraction, '.2f'))
+
+        if value >= 20000:
+            return 20000
+        elif value < 2:
+            return 2
+        else:
+            return value
 
     def change_active(self, mkt, otc):
 
         if mkt:
-            active_index_mkt = [1, 2, 3, 4, 5, 6, 7, 8, 10, 31, 32, 33, 34, 35,
-                                36, 37, 38, 40, 41, 45, 46, 48, 49, 50, 51, 52, 53, 54, 72, 74, 75]
+            active_index_mkt = [1, 2, 3, 4, 5, 6, 99, 101]
             random_index = random.randint(0, len(active_index_mkt) - 1)
             active = self.get_all_actives()[active_index_mkt[random_index]]
 
