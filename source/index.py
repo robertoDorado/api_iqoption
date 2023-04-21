@@ -108,7 +108,7 @@ if second < 10:
 elif second >= 10:
     seconds = second
 
-perc_prob = 0.75
+perc_prob = 0.70
 
 print(f'minha conta e {account_type}: R$ {format_currency(balance)}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}X{goal_loss}')
 print('processando algoritmo')
