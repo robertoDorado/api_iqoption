@@ -35,15 +35,15 @@ forex = True if operation_type == 'forex' else False
 if binary == False and forex == False:
     print('opção inválida')
     exit()
-    
+
 if binary:
     try:
-        goal_win = int(input('qual será a sua meta: '))
+        goal_win = int(input('qual será a sua meta de ganho: '))
+        goal_loss = int(input('qual será a sua meta de perda: '))
     except ValueError:
         print('meta inválida')
         exit()
 
-    goal_loss = 1
 elif forex:
     goal_win = 1
     goal_loss = 1
@@ -51,7 +51,7 @@ elif forex:
 instance = API.get_instance()
 balance = API.balance(account_type)
 
-total_candles = 100
+total_candles = 20
 
 high_tendencie = False
 low_tendencie = False
@@ -202,20 +202,11 @@ while True:
     if start:
         print(f'rastreando... {active}')
 
-    # tomada decisão pullback no mkt caso contrario seria na otc
-    # Verificar se o preço está abaixo da SMA
-    # Se estiver abaixo, verificar se o preço chegou ao nível de suporte
-    if mkt:
-
-        # Definir níveis de suporte e resistência
-        support = min([i['close'] for i in candles])
-        resistance = max([i['close'] for i in candles])
-
-        if trend == 'high' and [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
+        if trend == 'high':
 
             print(
-                f"Pullback de compra detectado! probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%, horas: {hours}:{minutes}:{seconds}")
-            
+                f"Compra detectado! probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%, horas: {hours}:{minutes}:{seconds}")
+
             if binary:
                 value = API.probability_on_input(
                     account_type, payoff, total_win, total_registers, total_loss)
@@ -228,33 +219,34 @@ while True:
                     historic_five_minutes = API.get_realtime_candles(
                         active, 300, total_candles_df)
                     historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                            else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                            'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                            'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                            for i in historic_five_minutes]
+                                              else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                                              'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                                              'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                                             for i in historic_five_minutes]
                     candles = API.get_all_candles(active, 300, total_candles_df)
             elif forex:
                 status_check = input('informe o resultado (win/loss): ')
                 win = True if status_check == 'win' else False
                 loss = True if status_check == 'loss' else False
-                
+
                 if win == False and loss == False:
                     print('opção inválida')
                     exit()
                 try:
-                    register_value = float(input('informe o valor de ganho ou de perda: '))
+                    register_value = float(
+                        input('informe o valor de ganho ou de perda: '))
                 except ValueError:
                     print('valor inválido')
                     exit()
-                    
+
                 persist_data(status_check, active, float(format(register_value, '.2f')),
-                                payoff, account_type, float(format(API.balance(account_type), '.2f')))
+                             payoff, account_type, float(format(API.balance(account_type), '.2f')))
 
         # Se estiver acima, verificar se o preço chegou ao nível de resistência
-        elif trend == 'low' and [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
+        elif trend == 'low':
 
             print(
-                f"Pullback de venda detectado! no ativo {active} probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%, horas: {hours}:{minutes}:{seconds}")
+                f"Venda detectado! no ativo {active} probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%, horas: {hours}:{minutes}:{seconds}")
 
             if binary:
                 value = API.probability_on_input(
@@ -268,124 +260,27 @@ while True:
                     historic_five_minutes = API.get_realtime_candles(
                         active, 300, total_candles_df)
                     historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                            else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                            'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                            'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                            for i in historic_five_minutes]
+                                              else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                                              'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                                              'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                                             for i in historic_five_minutes]
                     candles = API.get_all_candles(active, 300, total_candles_df)
             elif forex:
                 status_check = input('informe o resultado (win/loss): ')
                 win = True if status_check == 'win' else False
                 loss = True if status_check == 'loss' else False
-                
+
                 if win == False and loss == False:
                     print('opção inválida')
                     exit()
                 try:
-                    register_value = float(input('informe o valor de ganho ou de perda: '))
+                    register_value = float(
+                        input('informe o valor de ganho ou de perda: '))
                 except ValueError:
                     print('valor inválido')
                     exit()
-                    
+
                 persist_data(status_check, active, float(format(register_value, '.2f')),
-                                payoff, account_type, float(format(API.balance(account_type), '.2f')))
-
-    else:
-        # estratégia de pullback para o mercado OTC
-        max_value = max([i["max"] for i in candles][-2], [i["open"]
-                        for i in candles][-2])
-        min_value = min([i["min"] for i in candles][-2], [i["open"]
-                        for i in candles][-2])
-
-        # extrai os preços de abertura e fechamento dos dados do mercado
-        precos = np.array([[candle["open"], candle["close"]] for candle in candles])
-
-        # calcula o preço máximo e mínimo
-        preco_maximo = np.max(precos)
-        preco_minimo = np.min(precos)
-
-        # calcula o valor do pullback
-        pullback = preco_maximo - ((preco_maximo - preco_minimo) * 0.382)
-
-        # verifica se o preço atual está abaixo do pullback
-        preco_atual = precos[-1, 1]
-
-        if [i['close'] for i in candles][-1] < min_value + threshold and preco_atual < pullback and preco_atual < sma and start:
-
-            print(
-                f"Pullback OTC de compra detectado! no ativo {active} probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%, horas: {hours}:{minutes}:{seconds}")
-
-            if binary:
-                value = API.probability_on_input(
-                    account_type, payoff, total_win, total_registers, total_loss)
-                print(f'tentativa de compra R$ {format_currency(value)}')
-                status, status_check = API.call_decision(
-                    value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-                if status_check != 'win':
-                    active = API.change_active(mkt, otc)
-                    historic_five_minutes = API.get_realtime_candles(
-                        active, 300, total_candles_df)
-                    historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                            else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                            'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                            'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                            for i in historic_five_minutes]
-                    candles = API.get_all_candles(active, 300, total_candles_df)
-            elif forex:
-                status_check = input('informe o resultado (win/loss): ')
-                win = True if status_check == 'win' else False
-                loss = True if status_check == 'loss' else False
-                
-                if win == False and loss == False:
-                    print('opção inválida')
-                    exit()
-                try:
-                    register_value = float(input('informe o valor de ganho ou de perda: '))
-                except ValueError:
-                    print('valor inválido')
-                    exit()
-                    
-                persist_data(status_check, active, float(format(register_value, '.2f')),
-                                payoff, account_type, float(format(API.balance(account_type), '.2f')))
-
-        elif [i['close'] for i in candles][-1] > max_value - threshold and preco_atual > pullback and preco_atual > sma and start:
-
-            print(
-                f"Pullback OTC de venda detectado! no ativo {active} probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%, horas: {hours}:{minutes}:{seconds}")
-
-            if binary:
-                value = API.probability_on_input(
-                    account_type, payoff, total_win, total_registers, total_loss)
-                print(f'tentativa de venda R$ {format_currency(value)}')
-                status, status_check = API.put_decision(
-                    value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-                if status_check != 'win':
-                    active = API.change_active(mkt, otc)
-                    historic_five_minutes = API.get_realtime_candles(
-                        active, 300, total_candles_df)
-                    historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                            else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                            'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                            'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                            for i in historic_five_minutes]
-                    candles = API.get_all_candles(active, 300, total_candles_df)
-            elif forex:
-                status_check = input('informe o resultado (win/loss): ')
-                win = True if status_check == 'win' else False
-                loss = True if status_check == 'loss' else False
-                
-                if win == False and loss == False:
-                    print('opção inválida')
-                    exit()
-                try:
-                    register_value = float(input('informe o valor de ganho ou de perda: '))
-                except ValueError:
-                    print('valor inválido')
-                    exit()
-                    
-                persist_data(status_check, active, float(format(register_value, '.2f')),
-                                payoff, account_type, float(format(API.balance(account_type), '.2f')))
+                             payoff, account_type, float(format(API.balance(account_type), '.2f')))
 
     API.set_time_sleep(1)
