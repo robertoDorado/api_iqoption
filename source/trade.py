@@ -3,12 +3,7 @@ from iqoption.connection import BOT_IQ_Option
 from datetime import datetime
 import numpy as np
 from components.helpers import *
-from sklearn.linear_model import LinearRegression
-import pandas as pd
-import warnings
 import getpass
-
-warnings.filterwarnings('ignore')
 
 email_iqoption = input('e-mail iqoption: ')
 password_iqoption = getpass.getpass(prompt='senha iqoption: ')
@@ -51,11 +46,7 @@ elif forex:
 instance = API.get_instance()
 balance = API.balance(account_type)
 
-total_candles = 20
-
-high_tendencie = False
-low_tendencie = False
-consolidated_market = False
+total_candles = 100
 
 if binary:
     market = input('qual será o mercado (otc/mkt): ')
@@ -125,7 +116,8 @@ if second < 10:
 elif second >= 10:
     seconds = second
 
-perc_prob = 0.70
+wins = []
+loss = []
 
 if binary:
     print(f'minha conta e {account_type}: R$ {format_currency(balance)}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}X{goal_loss}')
@@ -155,13 +147,6 @@ while True:
     # comparar o preço atual com a SMA para determinar a tendência de mercado
     current_price = [i['close'] for i in historic_five_minutes]
 
-    if current_price[-1] > sma:
-        trend = 'high'
-    elif current_price[-1] < sma:
-        trend = 'low'
-    else:
-        consolidated_market = True
-
     all_candle_id_five_m = [i['id'] for i in historic_five_minutes]
 
     if len(new_candle) < 1:
@@ -170,117 +155,98 @@ while True:
     if new_candle[0] == all_candle_id_five_m[-2]:
         new_candle = []
         start = True
+        
+    # Definir níveis de suporte e resistência
+    support = min([i['close'] for i in candles])
+    resistance = max([i['close'] for i in candles])
 
-    # Calcular a variação percentual dos preços utilizando o numpy
-    percent_change = (prices[1:] - prices[:-1]) / prices[:-1] * 100
+    if [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
 
-    # Criar um DataFrame do pandas com as variáveis independentes e dependentes
-    X = pd.DataFrame(
-        {'percent_change': percent_change[:-1]}, columns=['percent_change'])
-    y = pd.DataFrame({'direction': np.sign(percent_change[1:])}, columns=['direction'])
+        print(f"Compra detectada!")
 
-    # Treinar um modelo de regressão linear utilizando a classe LinearRegression do scikit-learn
-    model = LinearRegression()
-    model.fit(X, y)
+        if binary:
+            value = API.probability_on_input(
+                account_type, payoff, total_win, total_registers, total_loss)
+            print(f'tentativa de compra R$ {format_currency(value)}')
+            status, status_check, wins, loss = API.call_decision(
+                value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
 
-    # Utilizar o modelo para prever a direção do próximo candle:
-    next_candle_percent_change = (prices[-1] - prices[-2]) / prices[-2] * 100
-    next_candle_direction = np.sign(next_candle_percent_change)
-    next_candle_prob = model.predict([[next_candle_percent_change]])[0][0]
+            if status_check != 'win':
+                active = API.change_active(mkt, otc)
+                historic_five_minutes = API.get_realtime_candles(
+                    active, 300, total_candles_df)
+                historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
+                                            else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                                            'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                                            'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                                            for i in historic_five_minutes]
+                candles = API.get_all_candles(active, 300, total_candles_df)
+        elif forex:
+            status_check = input('informe o resultado (win/loss): ')
+            win = True if status_check == 'win' else False
+            loss = True if status_check == 'loss' else False
 
-    if next_candle_prob < perc_prob:
+            if win == False and loss == False:
+                print('opção inválida')
+                exit()
+            try:
+                register_value = float(
+                    input('informe o valor de ganho ou de perda: '))
+            except ValueError:
+                print('valor inválido')
+                exit()
+
+            persist_data(status_check, active, float(format(register_value, '.2f')),
+                            payoff, account_type, float(format(API.balance(account_type), '.2f')))
+
+    # Se estiver acima, verificar se o preço chegou ao nível de resistência
+    elif [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
+
+        print(f"Venda detectada!")
+
+        if binary:
+            value = API.probability_on_input(
+                account_type, payoff, total_win, total_registers, total_loss)
+            print(f'tentativa de venda R$ {format_currency(value)}')
+            status, status_check, wins, loss = API.put_decision(
+                value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+
+            if status_check != 'win':
+                active = API.change_active(mkt, otc)
+                historic_five_minutes = API.get_realtime_candles(
+                    active, 300, total_candles_df)
+                historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
+                                            else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                                            'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                                            'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                                            for i in historic_five_minutes]
+                candles = API.get_all_candles(active, 300, total_candles_df)
+        elif forex:
+            status_check = input('informe o resultado (win/loss): ')
+            win = True if status_check == 'win' else False
+            loss = True if status_check == 'loss' else False
+
+            if win == False and loss == False:
+                print('opção inválida')
+                exit()
+            try:
+                register_value = float(
+                    input('informe o valor de ganho ou de perda: '))
+            except ValueError:
+                print('valor inválido')
+                exit()
+
+            persist_data(status_check, active, float(format(register_value, '.2f')),
+                             payoff, account_type, float(format(API.balance(account_type), '.2f')))
+    else:
         active = API.change_active(mkt, otc)
-        historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
+        historic_five_minutes = API.get_realtime_candles(
+            active, 300, total_candles_df)
         historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                  else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                  'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                  'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                 for i in historic_five_minutes]
+                                    else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
+                                    'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
+                                    'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
+                                    for i in historic_five_minutes]
         candles = API.get_all_candles(active, 300, total_candles_df)
-        continue
-
-    if start:
-        print(f'rastreando... {active}')
-
-        if trend == 'high':
-
-            print(
-                f"Compra detectado! probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%, horas: {hours}:{minutes}:{seconds}")
-
-            if binary:
-                value = API.probability_on_input(
-                    account_type, payoff, total_win, total_registers, total_loss)
-                print(f'tentativa de compra R$ {format_currency(value)}')
-                status, status_check = API.call_decision(
-                    value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-                if status_check != 'win':
-                    active = API.change_active(mkt, otc)
-                    historic_five_minutes = API.get_realtime_candles(
-                        active, 300, total_candles_df)
-                    historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                              else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                              'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                              'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                             for i in historic_five_minutes]
-                    candles = API.get_all_candles(active, 300, total_candles_df)
-            elif forex:
-                status_check = input('informe o resultado (win/loss): ')
-                win = True if status_check == 'win' else False
-                loss = True if status_check == 'loss' else False
-
-                if win == False and loss == False:
-                    print('opção inválida')
-                    exit()
-                try:
-                    register_value = float(
-                        input('informe o valor de ganho ou de perda: '))
-                except ValueError:
-                    print('valor inválido')
-                    exit()
-
-                persist_data(status_check, active, float(format(register_value, '.2f')),
-                             payoff, account_type, float(format(API.balance(account_type), '.2f')))
-
-        # Se estiver acima, verificar se o preço chegou ao nível de resistência
-        elif trend == 'low':
-
-            print(
-                f"Venda detectado! no ativo {active} probabilidade de acerto {float(format(next_candle_prob, '.2f')) * 100}%, horas: {hours}:{minutes}:{seconds}")
-
-            if binary:
-                value = API.probability_on_input(
-                    account_type, payoff, total_win, total_registers, total_loss)
-                print(f'tentativa de venda R$ {format_currency(value)}')
-                status, status_check = API.put_decision(
-                    value=value, active=active, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-                if status_check != 'win':
-                    active = API.change_active(mkt, otc)
-                    historic_five_minutes = API.get_realtime_candles(
-                        active, 300, total_candles_df)
-                    historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                              else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                              'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                              'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                             for i in historic_five_minutes]
-                    candles = API.get_all_candles(active, 300, total_candles_df)
-            elif forex:
-                status_check = input('informe o resultado (win/loss): ')
-                win = True if status_check == 'win' else False
-                loss = True if status_check == 'loss' else False
-
-                if win == False and loss == False:
-                    print('opção inválida')
-                    exit()
-                try:
-                    register_value = float(
-                        input('informe o valor de ganho ou de perda: '))
-                except ValueError:
-                    print('valor inválido')
-                    exit()
-
-                persist_data(status_check, active, float(format(register_value, '.2f')),
-                             payoff, account_type, float(format(API.balance(account_type), '.2f')))
 
     API.set_time_sleep(1)

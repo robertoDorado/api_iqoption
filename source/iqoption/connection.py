@@ -149,7 +149,7 @@ class BOT_IQ_Option:
             status = False
             status_check = ''
 
-        return status, status_check
+        return status, status_check, wins, stop_loss
 
     def put_decision(self, value, active, wins=[], stop_loss=[], active_type='turbo', payoff=0, goal_win=2, goal_loss=1, account_type=None):
         if self.balance(account_type) >= value:
@@ -188,7 +188,7 @@ class BOT_IQ_Option:
             status = False
             status_check = ''
 
-        return status, status_check
+        return status, status_check, wins, stop_loss
 
     def closest(self, lst, K):
         return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - K))]
