@@ -46,7 +46,7 @@ elif forex:
 instance = API.get_instance()
 balance = API.balance(account_type)
 
-total_candles = 100
+total_candles = 15
 
 if binary:
     market = input('qual será o mercado (otc/mkt): ')
