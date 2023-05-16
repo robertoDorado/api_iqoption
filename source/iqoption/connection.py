@@ -195,6 +195,9 @@ class BOT_IQ_Option:
 
     def kelly(self, b, p, q):
         return (b * p - q) / b
+    
+    def martingale(self, base_value, total_loss):
+        return base_value * (2 ** total_loss)
 
     def probability_on_input(self, account_type, payoff, total_win, total_registers, total_loss):
 

@@ -4,6 +4,7 @@ from datetime import datetime
 import numpy as np
 from components.helpers import *
 import getpass
+import re
 
 email_iqoption = input('e-mail iqoption: ')
 password_iqoption = getpass.getpass(prompt='senha iqoption: ')
@@ -66,28 +67,19 @@ elif forex:
     mkt = True
     otc = False
 
-total_registers = count_registers(account_type)[0]
-total_win = count_win_registers(account_type)[0]
-total_loss = count_loss_registers(account_type)[0]
-
-if total_registers == 0:
-    total_registers = 2
-
-if total_win == 0:
-    total_win = 1
-
-if total_loss >= 0:
-    total_loss = 1
-
 active_type = 'turbo'
 active = API.get_all_actives()[active_index]
 payoff = API.get_profit(active, active_type) * 100
 
-balance = API.balance(account_type)
-fraction = API.kelly(payoff, float(format(total_win / total_registers, '.2f')),
-                     float(format(total_loss / total_registers, '.2f')))
-value = float(format(balance * fraction, '.2f'))
-
+try:
+    value = input('qual será o primeiro valor de entrada: ')
+    is_comma = True if re.match(r"\d+,\d+", value) else False
+    value = re.sub(r",", ".", value) if is_comma else value
+    value = float(value)
+except ValueError:
+    print('formato inválido')
+    exit()
+    
 if value >= 20000:
     value = 20000
 
@@ -165,22 +157,24 @@ while True:
         print(f"Compra detectada!")
 
         if binary:
-            value = API.probability_on_input(
-                account_type, payoff, total_win, total_registers, total_loss)
+                
             print(f'tentativa de compra R$ {format_currency(value)}')
             status, status_check, wins, loss = API.call_decision(
                 value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
 
-            if status_check != 'win':
-                active = API.change_active(mkt, otc)
-                historic_five_minutes = API.get_realtime_candles(
-                    active, 300, total_candles_df)
-                historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                            else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                            'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                            'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                            for i in historic_five_minutes]
-                candles = API.get_all_candles(active, 300, total_candles_df)
+            if value > API.balance(account_type):
+                print('stop loss acionado')
+                exit()
+            
+            if status_check == 'win':
+                value = float(format(API.balance(account_type) * 0.02, '.2f'))
+                
+            if len(loss) > 0 and status_check == 'loose':
+                value = API.martingale(value, len(loss))
+            
+                if value > 20000:
+                    value = 20000
+                    
         elif forex:
             status_check = input('informe o resultado (win/loss): ')
             win = True if status_check == 'win' else False
@@ -205,22 +199,24 @@ while True:
         print(f"Venda detectada!")
 
         if binary:
-            value = API.probability_on_input(
-                account_type, payoff, total_win, total_registers, total_loss)
+                
             print(f'tentativa de venda R$ {format_currency(value)}')
             status, status_check, wins, loss = API.put_decision(
                 value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+            
+            if value > API.balance(account_type):
+                print('stop loss acionado')
+                exit()
+            
+            if status_check == 'win':
+                value = float(format(API.balance(account_type) * 0.02, '.2f'))
+                
+            if len(loss) > 0 and status_check == 'loose':
+                value = API.martingale(value, len(loss))
+            
+                if value > 20000:
+                    value = 20000
 
-            if status_check != 'win':
-                active = API.change_active(mkt, otc)
-                historic_five_minutes = API.get_realtime_candles(
-                    active, 300, total_candles_df)
-                historic_five_minutes = [{'candle': 'red' if historic_five_minutes[i]['open'] > historic_five_minutes[i]['close']
-                                            else 'green' if historic_five_minutes[i]['close'] > historic_five_minutes[i]['open'] else 'dogi',
-                                            'close': historic_five_minutes[i]['close'], 'open': historic_five_minutes[i]['open'],
-                                            'max': historic_five_minutes[i]['max'], 'min': historic_five_minutes[i]['min'], 'id': historic_five_minutes[i]['id']}
-                                            for i in historic_five_minutes]
-                candles = API.get_all_candles(active, 300, total_candles_df)
         elif forex:
             status_check = input('informe o resultado (win/loss): ')
             win = True if status_check == 'win' else False

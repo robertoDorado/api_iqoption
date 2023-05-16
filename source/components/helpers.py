@@ -22,25 +22,6 @@ def persist_data(status, active, total_value, payoff, account_type, balance):
     cnx.commit()
     return
 
-
-def count_registers(account_type):
-    query = ("SELECT COUNT(*) as registers FROM operations WHERE account_type = %s")
-    cursor.execute(query, (account_type,))
-    return cursor.fetchone()
-
-
-def count_win_registers(account_type):
-    query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'win' AND account_type = %s")
-    cursor.execute(query, (account_type,))
-    return cursor.fetchone()
-
-
-def count_loss_registers(account_type):
-    query = ("SELECT COUNT(*) as registers FROM operations WHERE status = 'loose' AND account_type = %s")
-    cursor.execute(query, (account_type,))
-    return cursor.fetchone()
-
-
 def format_currency(value):
     locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8') # definir o idioma para português do Brasil
     return locale.currency(value, grouping=True, symbol=None)
