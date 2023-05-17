@@ -161,16 +161,25 @@ while True:
             print(f'tentativa de compra R$ {format_currency(value)}')
             status, status_check, wins, loss = API.call_decision(
                 value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-            if value > API.balance(account_type):
-                print('stop loss acionado')
-                exit()
             
             if status_check == 'win':
                 value = float(format(API.balance(account_type) * 0.02, '.2f'))
                 
+                if value < 2:
+                    value = 2
+                    
+                if value > 20000:
+                    value = 20000
+                
             if len(loss) > 0 and status_check == 'loose':
                 value = API.martingale(value, len(loss))
+                
+                if value > API.balance(account_type):
+                    print('stop loss acionado')
+                    exit()
+                
+                if value < 2:
+                    value = 2
             
                 if value > 20000:
                     value = 20000
@@ -204,15 +213,24 @@ while True:
             status, status_check, wins, loss = API.put_decision(
                 value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
             
-            if value > API.balance(account_type):
-                print('stop loss acionado')
-                exit()
-            
             if status_check == 'win':
                 value = float(format(API.balance(account_type) * 0.02, '.2f'))
                 
+                if value < 2:
+                    value = 2
+                
+                if value > 20000:
+                    value = 20000
+                
             if len(loss) > 0 and status_check == 'loose':
                 value = API.martingale(value, len(loss))
+                
+                if value > API.balance(account_type):
+                    print('stop loss acionado')
+                    exit()
+                
+                if value < 2:
+                    value = 2
             
                 if value > 20000:
                     value = 20000
