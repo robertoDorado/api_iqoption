@@ -24,48 +24,38 @@ if API.check_my_connection() == False:
     print('erro na conexão com a corretora')
     exit()
 
-operation_type = input('qual será o tipo de operação (binary/forex): ')
-binary = True if operation_type == 'binary' else False
-forex = True if operation_type == 'forex' else False
-
-if binary == False and forex == False:
-    print('opção inválida')
+try:
+    goal_win = int(input('quantas tentativas de ganho: '))
+    goal_loss = int(input('quantas tentativas de perda: '))
+except ValueError:
+    print('meta inválida')
     exit()
 
-if binary:
-    try:
-        goal_win = int(input('qual será a sua meta de ganho: '))
-        goal_loss = int(input('qual será a sua meta de perda: '))
-    except ValueError:
-        print('meta inválida')
-        exit()
-
-elif forex:
-    goal_win = 1
-    goal_loss = 1
+try:
+    goal = input('qual será a sua meta: ')
+    is_comma = True if re.match(r"\d+,\d+", goal) else False
+    goal = re.sub(r",", ".", goal) if is_comma else goal
+    goal = float(goal)
+except ValueError:
+    print('valor inválido')
 
 instance = API.get_instance()
 balance = API.balance(account_type)
 
 total_candles = 15
 
-if binary:
-    market = input('qual será o mercado (otc/mkt): ')
-    mkt = True if market == 'mkt' else False
-    otc = True if market == 'otc' else False
+market = input('qual será o mercado (otc/mkt): ')
+mkt = True if market == 'mkt' else False
+otc = True if market == 'otc' else False
 
-    if mkt == False and otc == False:
-        print('tipo de mercado inválido')
-        exit()
+if mkt == False and otc == False:
+    print('tipo de mercado inválido')
+    exit()
 
-    if otc:
-        active_index = 76
-    elif mkt:
-        active_index = 1
-elif forex:
+if otc:
+    active_index = 76
+elif mkt:
     active_index = 1
-    mkt = True
-    otc = False
 
 active_type = 'turbo'
 active = API.get_all_actives()[active_index]
@@ -111,11 +101,7 @@ elif second >= 10:
 wins = []
 loss = []
 
-if binary:
-    print(f'minha conta e {account_type}: R$ {format_currency(balance)}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}X{goal_loss}')
-elif forex:
-    print(f'minha conta e {account_type}: R$ {format_currency(balance)}, ativo: {active}, opção de entrada manual forex, horas: {hours}:{minutes}:{seconds}')
-
+print(f'minha conta e {account_type}: R$ {format_currency(balance)}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}X{goal_loss}')
 print('processando algoritmo')
 
 while True:
@@ -155,103 +141,77 @@ while True:
     if [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
 
         print(f"Compra detectada!")
-
-        if binary:
-                
-            print(f'tentativa de compra R$ {format_currency(value)}')
-            status, status_check, wins, loss = API.call_decision(
-                value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+        print(f'tentativa de compra R$ {format_currency(value)}')
+        status, status_check, wins, loss = API.call_decision(
+            value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+        
+        if status_check == 'win':
+            value = float(format(API.balance(account_type) * 0.02, '.2f'))
             
-            if status_check == 'win':
-                value = float(format(API.balance(account_type) * 0.02, '.2f'))
-                
-                if value < 2:
-                    value = 2
-                    
-                if value > 20000:
-                    value = 20000
-                
-            if len(loss) > 0 and status_check == 'loose':
-                value = API.martingale(value, len(loss))
-                
-                if value > API.balance(account_type):
-                    print('stop loss acionado')
-                    exit()
-                
-                if value < 2:
-                    value = 2
+            if API.balance(account_type) >= goal:
+                print('meta batida')
+                exit()
             
-                if value > 20000:
-                    value = 20000
-                    
-        elif forex:
-            status_check = input('informe o resultado (win/loss): ')
-            win = True if status_check == 'win' else False
-            loss = True if status_check == 'loss' else False
-
-            if win == False and loss == False:
-                print('opção inválida')
+            if value < 2:
+                value = 2
+                
+            if value > 20000:
+                value = 20000
+                
+        if len(loss) > 0 and status_check == 'loose':
+            value = API.martingale(value, len(loss))
+            
+            if value > API.balance(account_type):
+                print('stop loss acionado')
                 exit()
-            try:
-                register_value = float(
-                    input('informe o valor de ganho ou de perda: '))
-            except ValueError:
-                print('valor inválido')
+            
+            if value < 2:
+                value = 2
+        
+            if value > 20000:
+                value = 20000
+            
+            if API.balance(account_type) >= goal:
+                print('meta batida')
                 exit()
-
-            persist_data(status_check, active, float(format(register_value, '.2f')),
-                            payoff, account_type, float(format(API.balance(account_type), '.2f')))
 
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
     elif [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
 
         print(f"Venda detectada!")
-
-        if binary:
-                
-            print(f'tentativa de venda R$ {format_currency(value)}')
-            status, status_check, wins, loss = API.put_decision(
-                value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+        print(f'tentativa de venda R$ {format_currency(value)}')
+        status, status_check, wins, loss = API.put_decision(
+            value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+        
+        if status_check == 'win':
+            value = float(format(API.balance(account_type) * 0.02, '.2f'))
             
-            if status_check == 'win':
-                value = float(format(API.balance(account_type) * 0.02, '.2f'))
-                
-                if value < 2:
-                    value = 2
-                
-                if value > 20000:
-                    value = 20000
-                
-            if len(loss) > 0 and status_check == 'loose':
-                value = API.martingale(value, len(loss))
-                
-                if value > API.balance(account_type):
-                    print('stop loss acionado')
-                    exit()
-                
-                if value < 2:
-                    value = 2
+            if API.balance(account_type) >= goal:
+                print('meta batida')
+                exit()
             
-                if value > 20000:
-                    value = 20000
-
-        elif forex:
-            status_check = input('informe o resultado (win/loss): ')
-            win = True if status_check == 'win' else False
-            loss = True if status_check == 'loss' else False
-
-            if win == False and loss == False:
-                print('opção inválida')
+            if value < 2:
+                value = 2
+            
+            if value > 20000:
+                value = 20000
+            
+        if len(loss) > 0 and status_check == 'loose':
+            value = API.martingale(value, len(loss))
+            
+            if API.balance(account_type) >= goal:
+                print('meta batida')
                 exit()
-            try:
-                register_value = float(
-                    input('informe o valor de ganho ou de perda: '))
-            except ValueError:
-                print('valor inválido')
+            
+            if value > API.balance(account_type):
+                print('stop loss acionado')
                 exit()
-
-            persist_data(status_check, active, float(format(register_value, '.2f')),
-                             payoff, account_type, float(format(API.balance(account_type), '.2f')))
+            
+            if value < 2:
+                value = 2
+        
+            if value > 20000:
+                value = 20000
     else:
         active = API.change_active(mkt, otc)
         historic_five_minutes = API.get_realtime_candles(
