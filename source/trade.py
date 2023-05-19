@@ -122,9 +122,6 @@ while True:
     prices = np.array([candle['close'] for candle in candles]).astype(float)
     sma = np.mean(prices)
 
-    # comparar o preço atual com a SMA para determinar a tendência de mercado
-    current_price = [i['close'] for i in historic_five_minutes]
-
     all_candle_id_five_m = [i['id'] for i in historic_five_minutes]
 
     if len(new_candle) < 1:
