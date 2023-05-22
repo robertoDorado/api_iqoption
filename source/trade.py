@@ -6,6 +6,16 @@ from components.helpers import *
 import getpass
 import re
 
+if count_registers()[0] > 0:
+    i = 1
+    last_register_balance = get_first_register_balance(i)
+    while last_register_balance == None:
+        i += 1
+        last_register_balance = get_first_register_balance(i)
+        continue
+else:
+    last_register_balance = (10000,)
+
 email_iqoption = input('e-mail iqoption: ')
 password_iqoption = getpass.getpass(prompt='senha iqoption: ')
 account_type = input('tipo de conta (practice/real): ')
@@ -38,6 +48,13 @@ try:
     goal = float(goal)
 except ValueError:
     print('valor inválido')
+    exit()
+
+value_stop_loss = last_register_balance[0] - 1000
+
+if value_stop_loss <= 0:
+    print('margem de stop loss inválida')
+    exit()
 
 instance = API.get_instance()
 balance = API.balance(account_type)
@@ -101,7 +118,7 @@ elif second >= 10:
 wins = []
 loss = []
 
-print(f'minha conta e {account_type}: R$ {format_currency(balance)}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}X{goal_loss}')
+print(f'minha conta e {account_type}: R$ {format_currency(balance)}, stop loss de R$ {format_currency(value_stop_loss)}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}X{goal_loss}')
 print('processando algoritmo')
 
 while True:
@@ -156,6 +173,11 @@ while True:
                 value = 20000
                 
         if len(loss) > 0 and status_check == 'loose':
+            
+            if API.balance(account_type) <= value_stop_loss:
+                print('stop loss acionado')
+                exit()
+            
             value = API.martingale(value, len(loss))
             
             if value > API.balance(account_type):
@@ -194,6 +216,11 @@ while True:
                 value = 20000
             
         if len(loss) > 0 and status_check == 'loose':
+            
+            if API.balance(account_type) <= value_stop_loss:
+                print('stop loss acionado')
+                exit()
+                
             value = API.martingale(value, len(loss))
             
             if API.balance(account_type) >= goal:
