@@ -50,7 +50,7 @@ except ValueError:
     print('valor inválido')
     exit()
 
-value_stop_loss = last_register_balance[0] - 1000
+value_stop_loss = last_register_balance[0] - 500
 
 if value_stop_loss <= 0:
     print('margem de stop loss inválida')
