@@ -42,14 +42,12 @@ except ValueError:
     exit()
 
 try:
-    goal = input('qual será a sua meta: ')
-    is_comma = True if re.match(r"\d+,\d+", goal) else False
-    goal = re.sub(r",", ".", goal) if is_comma else goal
-    goal = float(goal)
-except ValueError:
-    print('valor inválido')
+    grow_rate = get_grow_rate()
+except:
+    print('tabela de meta está vazia ou mal configurada')
     exit()
-
+    
+goal = float(format((last_register_balance[0] * grow_rate[0]) + last_register_balance[0], '.2f'))
 value_stop_loss = last_register_balance[0] - 500
 
 if value_stop_loss <= 0:
@@ -78,17 +76,12 @@ active_type = 'turbo'
 active = API.get_all_actives()[active_index]
 payoff = API.get_profit(active, active_type) * 100
 
-try:
-    value = input('qual será o primeiro valor de entrada: ')
-    is_comma = True if re.match(r"\d+,\d+", value) else False
-    value = re.sub(r",", ".", value) if is_comma else value
-    value = float(value)
-except ValueError:
-    print('formato inválido')
-    exit()
-    
+value = float(format(API.balance(account_type) * 0.02, '.2f'))
+
 if value >= 20000:
     value = 20000
+elif value < 2:
+    value = 2
 
 total_candles_df = total_candles
 new_candle = []
@@ -118,7 +111,15 @@ elif second >= 10:
 wins = []
 loss = []
 
-print(f'minha conta e {account_type}: R$ {format_currency(balance)}, stop loss de R$ {format_currency(value_stop_loss)}, ativo: {active}, payoff de {payoff}%, horas: {hours}:{minutes}:{seconds}, gerenciamento: {goal_win}X{goal_loss}')
+print(f'horas: {hours}:{minutes}:{seconds}')
+print(f'tipo de conta: {account_type}')
+print(f'capital: {format_currency(balance)}')
+print(f'meta do dia: {format_currency(goal)}')
+print(f'stop loss: {format_currency(value_stop_loss)}')
+print(f'primeiro valor de entrada: {format_currency(value)}')
+print(f'ativo: {active}')
+print(f'payoff: {payoff}%')
+print(f'gerenciamento: {goal_win}X{goal_loss}')
 print('processando algoritmo')
 
 while True:
@@ -147,95 +148,47 @@ while True:
     if new_candle[0] == all_candle_id_five_m[-2]:
         new_candle = []
         start = True
-        
+
     # Definir níveis de suporte e resistência
     support = min([i['close'] for i in candles])
     resistance = max([i['close'] for i in candles])
 
+    if API.balance(account_type) >= goal:
+        print('meta batida')
+        exit()
+
+    if API.balance(account_type) <= value_stop_loss:
+        print('stop loss acionado')
+        exit()
+
+    if value > API.balance(account_type):
+        print('stop loss acionado')
+        exit()
+
+    value = float(format(API.balance(account_type) * 0.02, '.2f'))
+
+    if value < 2:
+        value = 2
+    elif value > 20000:
+        value = 20000
+
+    # Se estiver abaixo, verificar se o preço chegou ao nível de suporte
     if [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
 
         print(f"Compra detectada!")
-        print(f'tentativa de compra R$ {format_currency(value)}')
+        print(f'tentativa de compra {format_currency(value)}')
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-        
-        if status_check == 'win':
-            value = float(format(API.balance(account_type) * 0.02, '.2f'))
             
-            if API.balance(account_type) >= goal:
-                print('meta batida')
-                exit()
-            
-            if value < 2:
-                value = 2
-                
-            if value > 20000:
-                value = 20000
-                
-        if len(loss) > 0 and status_check == 'loose':
-            
-            if API.balance(account_type) <= value_stop_loss:
-                print('stop loss acionado')
-                exit()
-            
-            value = API.martingale(value, len(loss))
-            
-            if value > API.balance(account_type):
-                print('stop loss acionado')
-                exit()
-            
-            if value < 2:
-                value = 2
-        
-            if value > 20000:
-                value = 20000
-            
-            if API.balance(account_type) >= goal:
-                print('meta batida')
-                exit()
 
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
     elif [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
 
         print(f"Venda detectada!")
-        print(f'tentativa de venda R$ {format_currency(value)}')
+        print(f'tentativa de venda {format_currency(value)}')
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         
-        if status_check == 'win':
-            value = float(format(API.balance(account_type) * 0.02, '.2f'))
-            
-            if API.balance(account_type) >= goal:
-                print('meta batida')
-                exit()
-            
-            if value < 2:
-                value = 2
-            
-            if value > 20000:
-                value = 20000
-            
-        if len(loss) > 0 and status_check == 'loose':
-            
-            if API.balance(account_type) <= value_stop_loss:
-                print('stop loss acionado')
-                exit()
-                
-            value = API.martingale(value, len(loss))
-            
-            if API.balance(account_type) >= goal:
-                print('meta batida')
-                exit()
-            
-            if value > API.balance(account_type):
-                print('stop loss acionado')
-                exit()
-            
-            if value < 2:
-                value = 2
-        
-            if value > 20000:
-                value = 20000
     else:
         active = API.change_active(mkt, otc)
         historic_five_minutes = API.get_realtime_candles(

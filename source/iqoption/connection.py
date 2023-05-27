@@ -121,7 +121,7 @@ class BOT_IQ_Option:
             exit()
 
         if status:
-            print(f'compra: R$ {format_currency(value)}')
+            print(f'compra: {format_currency(value)}')
             status_check, check_value = self.check_win_or_loss(id, 'v4')
 
             if status_check == 'win':
@@ -159,7 +159,7 @@ class BOT_IQ_Option:
             exit()
 
         if status:
-            print(f'venda: R$ {format_currency(value)}')
+            print(f'venda: {format_currency(value)}')
             status_check, check_value = self.check_win_or_loss(id, 'v4')
 
             if status_check == 'win':

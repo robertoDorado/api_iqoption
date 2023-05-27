@@ -24,7 +24,7 @@ def persist_data(status, active, total_value, payoff, account_type, balance):
 
 def format_currency(value):
     locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8') # definir o idioma para português do Brasil
-    return locale.currency(value, grouping=True, symbol=None)
+    return locale.currency(value, grouping=True, symbol="R$")
 
 def get_first_register_balance(set_day):
     filter_date = format_date() - timedelta(days=set_day)
@@ -34,6 +34,11 @@ def get_first_register_balance(set_day):
 
 def count_registers():
     query = ("SELECT COUNT(*) as registers FROM operations")
+    cursor.execute(query)
+    return cursor.fetchone()
+
+def get_grow_rate():
+    query = ("SELECT grow_rate FROM goal_month")
     cursor.execute(query)
     return cursor.fetchone()
     
