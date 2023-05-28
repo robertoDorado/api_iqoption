@@ -227,3 +227,6 @@ class BOT_IQ_Option:
             active = self.get_all_actives()[active_index_otc[random_index]]
 
         return active
+    
+    def calculate_stop_loss(self, balance, rate_stop_loss):
+        return balance - (balance * rate_stop_loss)

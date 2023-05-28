@@ -41,4 +41,9 @@ def get_grow_rate():
     query = ("SELECT grow_rate FROM goal_month")
     cursor.execute(query)
     return cursor.fetchone()
+
+def get_stop_loss_rate():
+    query = ("SELECT stop_loss_rate FROM goal_month")
+    cursor.execute(query)
+    return cursor.fetchone()
     

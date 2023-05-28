@@ -43,12 +43,13 @@ except ValueError:
 
 try:
     grow_rate = get_grow_rate()
+    stop_loss_rate = get_stop_loss_rate()
 except:
     print('tabela de meta está vazia ou mal configurada')
     exit()
     
 goal = float(format((last_register_balance[0] * grow_rate[0]) + last_register_balance[0], '.2f'))
-value_stop_loss = last_register_balance[0] - 500
+value_stop_loss = float(format(API.calculate_stop_loss(last_register_balance[0], stop_loss_rate[0]), '.2f'))
 
 if value_stop_loss <= 0:
     print('margem de stop loss inválida')
