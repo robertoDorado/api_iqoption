@@ -4,7 +4,14 @@ from datetime import datetime
 import numpy as np
 from components.helpers import *
 import getpass
-import re
+
+try:
+    grow_rate = get_grow_rate()
+    stop_loss_rate = get_stop_loss_rate()
+    initial_capital = get_initial_capital()
+except:
+    print('tabela meta mês está vazia ou mal configurada')
+    exit()
 
 if count_registers()[0] > 0:
     i = 1
@@ -14,7 +21,7 @@ if count_registers()[0] > 0:
         last_register_balance = get_first_register_balance(i)
         continue
 else:
-    last_register_balance = (10000,)
+    last_register_balance = (initial_capital[0],)
 
 email_iqoption = input('e-mail iqoption: ')
 password_iqoption = getpass.getpass(prompt='senha iqoption: ')
@@ -40,15 +47,8 @@ try:
 except ValueError:
     print('meta inválida')
     exit()
-
-try:
-    grow_rate = get_grow_rate()
-    stop_loss_rate = get_stop_loss_rate()
-except:
-    print('tabela de meta está vazia ou mal configurada')
-    exit()
     
-goal = float(format((last_register_balance[0] * grow_rate[0]) + last_register_balance[0], '.2f'))
+goal = float(format(API.calculate_goal(last_register_balance[0], grow_rate[0]), '.2f'))
 value_stop_loss = float(format(API.calculate_stop_loss(last_register_balance[0], stop_loss_rate[0]), '.2f'))
 
 if value_stop_loss <= 0:

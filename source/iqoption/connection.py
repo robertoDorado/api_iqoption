@@ -230,3 +230,6 @@ class BOT_IQ_Option:
     
     def calculate_stop_loss(self, balance, rate_stop_loss):
         return balance - (balance * rate_stop_loss)
+    
+    def calculate_goal(self, balance, rate_goal):
+        return balance + (balance * rate_goal)

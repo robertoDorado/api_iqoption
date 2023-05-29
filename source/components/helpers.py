@@ -46,4 +46,9 @@ def get_stop_loss_rate():
     query = ("SELECT stop_loss_rate FROM goal_month")
     cursor.execute(query)
     return cursor.fetchone()
+
+def get_initial_capital():
+    query = ("SELECT initial_capital FROM goal_month")
+    cursor.execute(query)
+    return cursor.fetchone()
     
