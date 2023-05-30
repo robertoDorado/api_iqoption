@@ -78,11 +78,7 @@ active = API.get_all_actives()[active_index]
 payoff = API.get_profit(active, active_type) * 100
 
 value = float(format(API.balance(account_type) * 0.02, '.2f'))
-
-if value >= 20000:
-    value = 20000
-elif value < 2:
-    value = 2
+value = 2 if value < 2 else 20000 if value > 20000 else value
 
 total_candles_df = total_candles
 new_candle = []
@@ -166,13 +162,6 @@ while True:
         print('stop loss acionado')
         exit()
 
-    value = float(format(API.balance(account_type) * 0.02, '.2f'))
-
-    if value < 2:
-        value = 2
-    elif value > 20000:
-        value = 20000
-
     # Se estiver abaixo, verificar se o preço chegou ao nível de suporte
     if [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
 
@@ -180,6 +169,13 @@ while True:
         print(f'tentativa de compra {format_currency(value)}')
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+        
+        if len(loss) > 0 and status_check == 'loose':
+            value = API.martingale(value, len(loss))
+            value = 2 if value < 2 else 20000 if value > 20000 else value
+        elif status_check == 'win':
+            value = float(format(API.balance(account_type) * 0.02, '.2f'))
+            value = 2 if value < 2 else 20000 if value > 20000 else value
             
 
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
@@ -189,6 +185,13 @@ while True:
         print(f'tentativa de venda {format_currency(value)}')
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+        
+        if len(loss) > 0 and status_check == 'loose':
+            value = API.martingale(value, len(loss))
+            value = 2 if value < 2 else 20000 if value > 20000 else value
+        elif status_check == 'win':
+            value = float(format(API.balance(account_type) * 0.02, '.2f'))
+            value = 2 if value < 2 else 20000 if value > 20000 else value
         
     else:
         active = API.change_active(mkt, otc)
