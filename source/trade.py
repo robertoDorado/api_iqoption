@@ -162,6 +162,7 @@ while True:
         print('stop loss acionado')
         exit()
 
+    value = 2 if value < 2 else 20000 if value > 20000 else value
     # Se estiver abaixo, verificar se o preço chegou ao nível de suporte
     if [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
 
@@ -174,7 +175,6 @@ while True:
             value = API.martingale(value, len(loss))
         elif status_check == 'win':
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
-        value = 2 if value < 2 else 20000 if value > 20000 else value
             
 
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
@@ -189,7 +189,6 @@ while True:
             value = API.martingale(value, len(loss))
         elif status_check == 'win':
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
-        value = 2 if value < 2 else 20000 if value > 20000 else value
         
     else:
         active = API.change_active(mkt, otc)
