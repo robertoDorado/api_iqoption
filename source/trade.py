@@ -19,7 +19,6 @@ if count_registers()[0] > 0:
     while last_register_balance == None:
         i += 1
         last_register_balance = get_first_register_balance(i)
-        continue
 else:
     last_register_balance = (initial_capital[0],)
 
