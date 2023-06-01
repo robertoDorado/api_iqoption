@@ -76,7 +76,7 @@ active_type = 'turbo'
 active = API.get_all_actives()[active_index]
 payoff = API.get_profit(active, active_type) * 100
 
-value = float(format(API.balance(account_type) * 0.02, '.2f'))
+value = float(format(API.balance(account_type) * 0.01, '.2f'))
 value = 2 if value < 2 else 20000 if value > 20000 else value
 
 total_candles_df = total_candles
@@ -154,7 +154,7 @@ while True:
             value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         
         if status_check == 'loose':
-            value = float(format(API.balance(account_type) * 0.02, '.2f'))
+            value = float(format(API.balance(account_type) * 0.01, '.2f'))
         elif status_check == 'win' and len(wins) > 0:
             value = API.soros(value, len(wins))
             
@@ -167,7 +167,7 @@ while True:
             value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         
         if status_check == 'loose':
-            value = float(format(API.balance(account_type) * 0.02, '.2f'))
+            value = float(format(API.balance(account_type) * 0.01, '.2f'))
         elif status_check == 'win' and len(wins) > 0:
             value = API.soros(value, len(wins))
         
