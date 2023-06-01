@@ -111,15 +111,15 @@ while True:
 
     start = False
     
-    historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
-    historic_five_minutes = [{'id': historic_five_minutes[i]['id']} for i in historic_five_minutes]
-    candles = API.get_all_candles(active, 900, total_candles_df)
+    history_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
+    history_five_minutes = [{'id': history_five_minutes[i]['id']} for i in history_five_minutes]
+    candles = API.get_all_candles(active, 300, total_candles_df)
 
     # calcular a média móvel simples (SMA) dos últimos n períodos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
     sma = np.mean(prices)
 
-    all_candle_id_five_m = [i['id'] for i in historic_five_minutes]
+    all_candle_id_five_m = [i['id'] for i in history_five_minutes]
 
     if len(new_candle) < 1:
         new_candle.append(all_candle_id_five_m[-1])
@@ -173,8 +173,8 @@ while True:
         
     else:
         active = API.change_active(mkt, otc)
-        historic_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
-        historic_five_minutes = [{'id': historic_five_minutes[i]['id']} for i in historic_five_minutes]
-        candles = API.get_all_candles(active, 900, total_candles_df)
+        history_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
+        history_five_minutes = [{'id': history_five_minutes[i]['id']} for i in history_five_minutes]
+        candles = API.get_all_candles(active, 300, total_candles_df)
 
     API.set_time_sleep(1)
