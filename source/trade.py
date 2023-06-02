@@ -1,8 +1,8 @@
 # _*_ coding: utf-8 _*_
 from iqoption.connection import BOT_IQ_Option
-from datetime import datetime
-import numpy as np
 from components.helpers import *
+import datetime
+import numpy as np
 import getpass
 
 try:
@@ -57,7 +57,7 @@ if value_stop_loss <= 0:
 instance = API.get_instance()
 balance = API.balance(account_type)
 
-total_candles = 50
+total_candles = 15
 
 market = input('qual será o mercado (otc/mkt): ')
 mkt = True if market == 'mkt' else False
@@ -80,12 +80,10 @@ value = float(format(API.balance(account_type) * 0.01, '.2f'))
 value = 2 if value < 2 else 20000 if value > 20000 else value
 
 total_candles_df = total_candles
-new_candle = []
 
-time = datetime.now()
-hour = time.hour
-minute = time.minute
-second = time.second
+hour = datetime.datetime.now().hour
+minute = datetime.datetime.now().minute
+second = datetime.datetime.now().second
 
 threshold = 0.5
 
@@ -110,23 +108,18 @@ print('processando algoritmo')
 while True:
 
     start = False
-    
-    history_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
-    history_five_minutes = [{'id': history_five_minutes[i]['id']} for i in history_five_minutes]
     candles = API.get_all_candles(active, 300, total_candles_df)
+    
+    # Obtém a hora atual em Brasília
+    current_hour = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
+    
+    # Verifica se os minutos são divisíveis por 5
+    if current_hour.minute % 5 == 0:
+        start = True
 
     # calcular a média móvel simples (SMA) dos últimos n períodos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
     sma = np.mean(prices)
-
-    all_candle_id_five_m = [i['id'] for i in history_five_minutes]
-
-    if len(new_candle) < 1:
-        new_candle.append(all_candle_id_five_m[-1])
-
-    if new_candle[0] == all_candle_id_five_m[-2]:
-        new_candle = []
-        start = True
 
     # Definir níveis de suporte e resistência
     support = min([i['close'] for i in candles])
@@ -154,8 +147,10 @@ while True:
             value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         
         if status_check == 'loose':
+            API.set_time_sleep(60)
             value = float(format(API.balance(account_type) * 0.01, '.2f'))
         elif status_check == 'win' and len(wins) > 0:
+            API.set_time_sleep(60)
             value = API.soros(value, len(wins))
             
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
@@ -167,14 +162,14 @@ while True:
             value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         
         if status_check == 'loose':
+            API.set_time_sleep(60)
             value = float(format(API.balance(account_type) * 0.01, '.2f'))
         elif status_check == 'win' and len(wins) > 0:
+            API.set_time_sleep(60)
             value = API.soros(value, len(wins))
         
     else:
         active = API.change_active(mkt, otc)
-        history_five_minutes = API.get_realtime_candles(active, 300, total_candles_df)
-        history_five_minutes = [{'id': history_five_minutes[i]['id']} for i in history_five_minutes]
         candles = API.get_all_candles(active, 300, total_candles_df)
 
     API.set_time_sleep(1)
