@@ -148,6 +148,7 @@ class BOT_IQ_Option:
             print(f'ativo {active} indisponivel')
             status = False
             status_check = ''
+            self.set_time_sleep(60)
 
         return status, status_check, wins, stop_loss
 
@@ -187,6 +188,7 @@ class BOT_IQ_Option:
             print(f'ativo {active} indisponivel')
             status = False
             status_check = ''
+            self.set_time_sleep(60)
 
         return status, status_check, wins, stop_loss
 
