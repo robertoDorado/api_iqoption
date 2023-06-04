@@ -124,6 +124,7 @@ while True:
     # Definir níveis de suporte e resistência
     support = min([i['close'] for i in candles])
     resistance = max([i['close'] for i in candles])
+    close_price = [i['close'] for i in candles][-1]
 
     if API.balance(account_type) >= goal:
         print('meta batida')
@@ -139,7 +140,7 @@ while True:
 
     value = 2 if value < 2 else 20000 if value > 20000 else value
     # Se estiver abaixo, verificar se o preço chegou ao nível de suporte
-    if [i['close'] for i in candles][-1] < sma and [i['close'] for i in candles][-1] <= support + threshold and start:
+    if close_price < sma and close_price <= support + threshold and start:
 
         print(f"Compra detectada!")
         print(f'tentativa de compra {format_currency(value)}')
@@ -154,7 +155,7 @@ while True:
             value = API.soros(value, len(wins))
             
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
-    elif [i['close'] for i in candles][-1] > sma and [i['close'] for i in candles][-1] >= resistance - threshold and start:
+    elif close_price > sma and close_price >= resistance - threshold and start:
 
         print(f"Venda detectada!")
         print(f'tentativa de venda {format_currency(value)}')
