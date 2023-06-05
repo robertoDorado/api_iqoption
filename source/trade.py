@@ -85,7 +85,7 @@ hour = datetime.datetime.now().hour
 minute = datetime.datetime.now().minute
 second = datetime.datetime.now().second
 
-threshold = 0.5
+threshold = 0.001
 
 hours = f'0{hour}' if hour < 10 else hour
 minutes = f'0{minute}' if minute < 10 else minute
