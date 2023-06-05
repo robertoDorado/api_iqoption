@@ -113,8 +113,8 @@ while True:
     # Obtém a hora atual em Brasília
     current_hour = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
     
-    # Verifica se os minutos são divisíveis por 5
-    if current_hour.minute % 5 == 0:
+    # Verifica se os minutos são iguais a zero
+    if current_hour.minute == 0:
         start = True
 
     # calcular a média móvel simples (SMA) dos últimos n períodos
