@@ -208,13 +208,8 @@ class BOT_IQ_Option:
             total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
 
         value = float(format(balance * fraction, '.2f'))
-
-        if value >= 20000:
-            return 20000
-        elif value < 2:
-            return 2
-        else:
-            return value
+        value = 2 if value < 2 else 20000 if value > 20000 else value
+        return value
 
     def change_active(self, mkt, otc):
 

@@ -108,22 +108,29 @@ print('processando algoritmo')
 while True:
 
     start = False
+    position = False
+    
     candles = API.get_all_candles(active, 300, total_candles_df)
     
     # Obtém a hora atual em Brasília
     current_hour = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
     
-    # Verifica se os minutos estão entre 0 e 5
+    # Verifica se o minuto do setup está entre 0 e 5
     if current_hour.minute >= 0 and current_hour.minute <= 5:
         start = True
+        # Verifica se posição de entrada é igual ao minuto 5
+        if current_hour.minute == 5:
+            position = True
 
-    # calcular a média móvel simples (SMA) dos últimos n períodos
+    # Calcular a média móvel simples (SMA) dos últimos n períodos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
     sma = np.mean(prices)
 
     # Definir níveis de suporte e resistência
     support = min([i['close'] for i in candles])
     resistance = max([i['close'] for i in candles])
+    
+    # Preço atual do ativo
     close_price = [i['close'] for i in candles][-1]
 
     if API.balance(account_type) >= goal:
@@ -142,34 +149,35 @@ while True:
     # Se estiver abaixo, verificar se o preço chegou ao nível de suporte
     if close_price < sma and close_price <= support + threshold and start:
 
-        print(f"Compra detectada!")
-        print(f'tentativa de compra {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
-        
-        status, status_check, wins, loss = API.call_decision(
-            value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-        
-        if status_check == 'loose':
-            API.set_time_sleep(400)
-            value = float(format(API.balance(account_type) * 0.01, '.2f'))
-        elif status_check == 'win' and len(wins) > 0:
-            API.set_time_sleep(400)
-            value = API.soros(value, len(wins))
+        if position:
+            print(f"Oportunidade de Compra detectada!")
+            print(f'tentativa de compra {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+            
+            status, status_check, wins, loss = API.call_decision(
+                value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+            
+            if status_check == 'loose':
+                API.set_time_sleep(400)
+                value = float(format(API.balance(account_type) * 0.01, '.2f'))
+            elif status_check == 'win' and len(wins) > 0:
+                API.set_time_sleep(400)
+                value = API.soros(value, len(wins))
             
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
     elif close_price > sma and close_price >= resistance - threshold and start:
 
-        print(f"Venda detectada!")
-        print(f'tentativa de venda {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
-        
-        status, status_check, wins, loss = API.put_decision(
-            value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-        
-        if status_check == 'loose':
-            API.set_time_sleep(400)
-            value = float(format(API.balance(account_type) * 0.01, '.2f'))
-        elif status_check == 'win' and len(wins) > 0:
-            API.set_time_sleep(400)
-            value = API.soros(value, len(wins))
+        if position:
+            print(f"Oportunidade de Venda detectada!")
+            print(f'tentativa de venda {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+            
+            status, status_check, wins, loss = API.put_decision(
+                value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+            if status_check == 'loose':
+                API.set_time_sleep(400)
+                value = float(format(API.balance(account_type) * 0.01, '.2f'))
+            elif status_check == 'win' and len(wins) > 0:
+                API.set_time_sleep(400)
+                value = API.soros(value, len(wins))
         
     else:
         active = API.change_active(mkt, otc)
