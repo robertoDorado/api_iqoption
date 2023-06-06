@@ -57,8 +57,6 @@ if value_stop_loss <= 0:
 instance = API.get_instance()
 balance = API.balance(account_type)
 
-total_candles = 15
-
 market = input('qual será o mercado (otc/mkt): ')
 mkt = True if market == 'mkt' else False
 otc = True if market == 'otc' else False
@@ -79,22 +77,14 @@ payoff = API.get_profit(active, active_type) * 100
 value = float(format(API.balance(account_type) * 0.01, '.2f'))
 value = 2 if value < 2 else 20000 if value > 20000 else value
 
-total_candles_df = total_candles
-
-hour = datetime.datetime.now().hour
-minute = datetime.datetime.now().minute
-second = datetime.datetime.now().second
-
+total_candles_df = 15
 threshold = 0.001
-
-hours = f'0{hour}' if hour < 10 else hour
-minutes = f'0{minute}' if minute < 10 else minute
-seconds = f'0{second}' if second < 10 else second
+current_hour = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
 
 wins = []
 loss = []
 
-print(f'horas: {hours}:{minutes}:{seconds}')
+print(f'horas: {current_hour.strftime("%H:%M:%S")}')
 print(f'tipo de conta: {account_type}')
 print(f'capital: {format_currency(balance)}')
 print(f'meta do dia: {format_currency(goal)}')
@@ -114,12 +104,13 @@ while True:
     
     # Obtém a hora atual em Brasília
     current_hour = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
-    
-    # Verifica se o minuto do setup está entre 0 e 5
-    if current_hour.minute >= 0 and current_hour.minute <= 5:
+            
+    # Verifica o timestamp de entrada
+    if current_hour.minute >= 55 and current_hour.minute <= 59:
         start = True
-        # Verifica se posição de entrada é igual ao minuto 5
-        if current_hour.minute == 5:
+    elif current_hour.minute >= 0 and current_hour.minute <= 5:
+        start = True
+        if current_hour.minute == 0:
             position = True
 
     # Calcular a média móvel simples (SMA) dos últimos n períodos
@@ -152,7 +143,6 @@ while True:
         if position:
             print(f"Oportunidade de Compra detectada!")
             print(f'tentativa de compra {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
-            
             status, status_check, wins, loss = API.call_decision(
                 value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
             
@@ -169,9 +159,9 @@ while True:
         if position:
             print(f"Oportunidade de Venda detectada!")
             print(f'tentativa de venda {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
-            
             status, status_check, wins, loss = API.put_decision(
                 value=value, active=active, wins=wins, stop_loss=loss, payoff=payoff, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+            
             if status_check == 'loose':
                 API.set_time_sleep(400)
                 value = float(format(API.balance(account_type) * 0.01, '.2f'))
