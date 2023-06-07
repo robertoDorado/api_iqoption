@@ -198,8 +198,8 @@ class BOT_IQ_Option:
     def kelly(self, b, p, q):
         return (b * p - q) / b
     
-    def soros(self, base_value, total_win):
-        return base_value * (2 ** total_win)
+    def soros(self, base_value, payoff):
+        return (base_value * payoff) + base_value
 
     def probability_on_input(self, account_type, payoff, total_win, total_registers, total_loss):
 
