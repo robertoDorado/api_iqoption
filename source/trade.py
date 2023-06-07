@@ -110,8 +110,7 @@ while True:
         start = True
     elif current_hour.minute >= 0 and current_hour.minute <= 5:
         start = True
-        if current_hour.minute == 0:
-            position = True
+        position = True
 
     # Calcular a média móvel simples (SMA) dos últimos n períodos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
