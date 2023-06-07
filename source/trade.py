@@ -108,7 +108,7 @@ while True:
     # Verifica o timestamp de entrada
     if current_hour.minute >= 55 and current_hour.minute <= 59:
         start = True
-    elif current_hour.minute >= 0 and current_hour.minute <= 5:
+    elif current_hour.minute >= 0 and current_hour.minute <= 3:
         start = True
         position = True
 
