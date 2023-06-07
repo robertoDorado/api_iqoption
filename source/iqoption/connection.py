@@ -113,7 +113,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
 
-    def call_decision(self, value, active, wins=[], stop_loss=[], active_type='turbo', payoff=0, goal_win=2, goal_loss=1, account_type=None):
+    def call_decision(self, value, active, wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'call', 5)
         else:
@@ -127,8 +127,7 @@ class BOT_IQ_Option:
             if status_check == 'win':
                 wins.append(status_check)
                 print(f'total wins: {len(wins)}')
-                register_value = value * self.get_profit(active, active_type)
-                persist_data(status_check, active, float(format(register_value, '.2f')),
+                persist_data(status_check, active, float(format(check_value, '.2f')),
                              payoff, account_type, float(format(self.balance(account_type), '.2f')))
 
                 if len(wins) >= goal_win:
@@ -137,8 +136,7 @@ class BOT_IQ_Option:
             else:
                 stop_loss.append(status_check)
                 print(f'total loss: {len(stop_loss)}')
-                register_value = value
-                persist_data(status_check, active, float(format(register_value, '.2f')),
+                persist_data(status_check, active, float(format(check_value * -1, '.2f')),
                              payoff, account_type, float(format(self.balance(account_type), '.2f')))
 
                 if len(stop_loss) >= goal_loss:
@@ -152,7 +150,7 @@ class BOT_IQ_Option:
 
         return status, status_check, wins, stop_loss
 
-    def put_decision(self, value, active, wins=[], stop_loss=[], active_type='turbo', payoff=0, goal_win=2, goal_loss=1, account_type=None):
+    def put_decision(self, value, active, wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'put', 5)
         else:
@@ -166,8 +164,7 @@ class BOT_IQ_Option:
             if status_check == 'win':
                 wins.append(status_check)
                 print(f'total wins: {len(wins)}')
-                register_value = value * self.get_profit(active, active_type)
-                persist_data(status_check, active, float(format(register_value, '.2f')),
+                persist_data(status_check, active, float(format(check_value, '.2f')),
                              payoff, account_type, float(format(self.balance(account_type), '.2f')))
 
                 if len(wins) >= goal_win:
@@ -177,8 +174,7 @@ class BOT_IQ_Option:
             else:
                 stop_loss.append(status_check)
                 print(f'total loss: {len(stop_loss)}')
-                register_value = value
-                persist_data(status_check, active, float(format(register_value, '.2f')),
+                persist_data(status_check, active, float(format(check_value * -1, '.2f')),
                              payoff, account_type, float(format(self.balance(account_type), '.2f')))
 
                 if len(stop_loss) >= goal_loss:
