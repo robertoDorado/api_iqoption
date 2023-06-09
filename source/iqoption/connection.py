@@ -196,6 +196,9 @@ class BOT_IQ_Option:
     
     def soros(self, base_value, payoff):
         return (base_value * payoff) + base_value
+    
+    def martingale(self, base_value, loss):
+        return base_value * (2 ** loss)
 
     def probability_on_input(self, account_type, payoff, total_win, total_registers, total_loss):
 

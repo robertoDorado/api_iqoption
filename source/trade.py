@@ -137,11 +137,12 @@ while True:
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         
-        if status_check == 'loose':
+        if status_check == 'loose' and len(loss) > 0:
+            value = API.martingale(value, len(loss))
+            print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
+        elif status_check == 'win':
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
-        elif status_check == 'win' and len(wins) > 0:
-            value = API.soros(value, API.get_profit(active, active_type))
             print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
             
@@ -152,11 +153,12 @@ while True:
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         
-        if status_check == 'loose':
+        if status_check == 'loose' and len(loss) > 0:
+            value = API.martingale(value, len(loss))
+            print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
+        elif status_check == 'win':
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
-        elif status_check == 'win' and len(wins) > 0:
-            value = API.soros(value, API.get_profit(active, active_type))
             print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
         
