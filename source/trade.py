@@ -109,10 +109,13 @@ while True:
     # Calcular a média móvel simples (SMA) dos últimos n períodos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
     sma = np.mean(prices)
+    
+    # Tendencia atual do mercado
+    tendencie = "High" if prices[-1] > sma else "Low" if prices[-1] < sma else "Equal"
 
     # Definir níveis de suporte e resistência
-    support = min([i['close'] for i in candles])
-    resistance = max([i['close'] for i in candles])
+    support = min(prices)
+    resistance = max(prices)
     
     # Reajuste no preço de entrada
     value = 2 if value < 2 else 20000 if value > 20000 else value
@@ -164,7 +167,7 @@ while True:
             API.set_time_sleep(400)
             
     # Se estiver abaixo, verificar se o preço chegou ao nível de suporte pullback
-    elif prices[-1] < sma and prices[-1] <= support + threshold and start:
+    elif prices[-1] < sma and prices[-1] <= support + threshold and tendencie == "High" and start:
         
         print(f'Tentativa de compra Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
@@ -180,7 +183,7 @@ while True:
             API.set_time_sleep(400)
             
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
-    elif prices[-1] > sma and prices[-1] >= resistance - threshold and start:
+    elif prices[-1] > sma and prices[-1] >= resistance - threshold and tendencie == "Low" and start:
         
         print(f'Tentativa de venda Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.put_decision(
