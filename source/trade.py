@@ -114,8 +114,11 @@ while True:
     support = min([i['close'] for i in candles])
     resistance = max([i['close'] for i in candles])
     
-    # Preço atual do ativo
-    close_price = [i['close'] for i in candles][-1]
+    # Reajuste no preço de entrada
+    value = 2 if value < 2 else 20000 if value > 20000 else value
+    
+    # Calculo do valor estocástico
+    k = 100 * (prices[-1] - support) / (resistance - support)
 
     if API.balance(account_type) >= goal:
         print('meta batida')
@@ -128,12 +131,45 @@ while True:
     if value > API.balance(account_type):
         print('stop loss acionado')
         exit()
-
-    value = 2 if value < 2 else 20000 if value > 20000 else value
-    # Se estiver abaixo, verificar se o preço chegou ao nível de suporte
-    if close_price < sma and close_price <= support + threshold and start:
         
-        print(f'Tentativa de compra {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+    # Verifique os sinais de compra/venda estocastico
+    if k > 80 and start:
+        
+        print(f'Tentativa de venda Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+        status, status_check, wins, loss = API.put_decision(
+            value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+        
+        if status_check == 'loose' and len(loss) > 0:
+            value = API.martingale(value, len(loss))
+            print(f'proxima entrada no valor de: {format_currency(value)}')
+            API.set_time_sleep(400)
+        elif status_check == 'win':
+            value = float(format(API.balance(account_type) * 0.02, '.2f'))
+            print(f'proxima entrada no valor de: {format_currency(value)}')
+            API.set_time_sleep(400)
+            
+    elif k < 20 and start:
+        
+        print(f'Tentativa de compra Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+        status, status_check, wins, loss = API.call_decision(
+            value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+        
+        if status_check == 'loose' and len(loss) > 0:
+            value = API.martingale(value, len(loss))
+            print(f'proxima entrada no valor de: {format_currency(value)}')
+            API.set_time_sleep(400)
+        elif status_check == 'win':
+            value = float(format(API.balance(account_type) * 0.02, '.2f'))
+            print(f'proxima entrada no valor de: {format_currency(value)}')
+            API.set_time_sleep(400)
+    else:
+        active = API.change_active(mkt, otc)
+        candles = API.get_all_candles(active, 300, total_candles_df)
+
+    # Se estiver abaixo, verificar se o preço chegou ao nível de suporte pullback
+    if prices[-1] < sma and prices[-1] <= support + threshold and start:
+        
+        print(f'Tentativa de compra Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         
@@ -147,9 +183,9 @@ while True:
             API.set_time_sleep(400)
             
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
-    elif close_price > sma and close_price >= resistance - threshold and start:
+    elif prices[-1] > sma and prices[-1] >= resistance - threshold and start:
         
-        print(f'Tentativa de venda {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+        print(f'Tentativa de venda Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         
