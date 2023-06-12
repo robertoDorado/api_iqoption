@@ -162,12 +162,9 @@ while True:
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
             print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
-    else:
-        active = API.change_active(mkt, otc)
-        candles = API.get_all_candles(active, 300, total_candles_df)
-
+            
     # Se estiver abaixo, verificar se o preço chegou ao nível de suporte pullback
-    if prices[-1] < sma and prices[-1] <= support + threshold and start:
+    elif prices[-1] < sma and prices[-1] <= support + threshold and start:
         
         print(f'Tentativa de compra Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
