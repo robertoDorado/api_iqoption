@@ -114,9 +114,12 @@ while True:
     percent_change = [((prices[i] - prices[-1]) / prices[-1])
                       * 100 for i in range(1, len(prices))]
 
+    upward_trend = [change > 0 for change in percent_change]
+    downward_trend = [change < 0 for change in percent_change]
+    
     # Tendencia atual do mercado ingrime
-    upward_trend = all(change > 0 for change in percent_change)
-    downward_trend = all(change < 0 for change in percent_change)
+    downward_trend = float(format((downward_trend.count(True) / len(downward_trend)) * 100, '.2f'))
+    upward_trend = float(format((upward_trend.count(True) / len(upward_trend)) * 100, '.2f'))
 
     # Calculo para definir um candle de força
     prices_open = np.array([candle['open'] for candle in candles]).astype(float)
@@ -146,7 +149,7 @@ while True:
         exit()
 
     # Verifique os sinais de compra/venda estocastico
-    if k > 80 and upward_trend:
+    if k > 80 and upward_trend > 90:
 
         print(
             f'Tentativa de venda Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
@@ -163,7 +166,7 @@ while True:
             print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
 
-    elif k < 20 and downward_trend:
+    elif k < 20 and downward_trend > 90:
 
         print(
             f'Tentativa de compra Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
