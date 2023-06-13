@@ -216,7 +216,7 @@ while True:
             print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
 
-    elif candle_force > 0.290236:
+    elif candle_force > 0.264964:
 
         value = float(format(API.balance(account_type) * 0.06, '.2f'))
         print(
@@ -225,7 +225,7 @@ while True:
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
 
-    elif candle_force < -0.290236:
+    elif candle_force < -0.264964:
 
         value = float(format(API.balance(account_type) * 0.06, '.2f'))
         print(
