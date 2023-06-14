@@ -144,6 +144,10 @@ while True:
 
     # Calculo do valor estocástico
     k = 100 * (prices[-1] - support) / (resistance - support)
+    
+    if current_hour.hour > 12:
+        print(f'periodo da manha ultrapassado {current_hour.strftime("%H:%M:%S")}')
+        exit()
 
     if API.balance(account_type) >= goal:
         print('meta batida')
