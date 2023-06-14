@@ -111,7 +111,7 @@ while True:
     tendencie = "High" if prices[-1] > sma else "Low" if prices[-1] < sma else "Equal"
 
     # Variação percentual dos preços do ativo para calculo da tendencia
-    percent_change = [((prices[i] - prices[-1]) / prices[-1])
+    percent_change = [((prices[i] - prices[i-1]) / prices[i-1])
                       * 100 for i in range(1, len(prices))]
 
     upward_trend = [change > 0 for change in percent_change]
@@ -149,7 +149,7 @@ while True:
         exit()
 
     # Verifique os sinais de compra/venda estocastico
-    if k > 80 and upward_trend > 90:
+    if k > 80 and upward_trend > 80:
 
         print(
             f'Tentativa de venda Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
@@ -166,7 +166,7 @@ while True:
             print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
 
-    elif k < 20 and downward_trend > 90:
+    elif k < 20 and downward_trend > 80:
 
         print(
             f'Tentativa de compra Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
