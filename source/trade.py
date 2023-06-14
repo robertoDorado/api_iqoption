@@ -165,15 +165,9 @@ while True:
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
 
-        if status_check == 'loose':
-            value = float(format(API.balance(account_type) * 0.06, '.2f'))
-            print(f'proxima entrada no valor de: {format_currency(value)}')
-            API.set_time_sleep(400)
-        elif status_check == 'win' and len(wins) > 0:
-            value = float(
-                format(API.soros(value, API.get_profit(active, active_type)), '.2f'))
-            print(f'proxima entrada no valor de: {format_currency(value)}')
-            API.set_time_sleep(400)
+        value = float(format(API.balance(account_type) * 0.06, '.2f'))
+        print(f'proxima entrada no valor de: {format_currency(value)}')
+        API.set_time_sleep(400)
 
     elif k < 20 and downward_trend > 80:
 
@@ -182,15 +176,9 @@ while True:
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
 
-        if status_check == 'loose':
-            value = float(format(API.balance(account_type) * 0.06, '.2f'))
-            print(f'proxima entrada no valor de: {format_currency(value)}')
-            API.set_time_sleep(400)
-        elif status_check == 'win' and len(wins) > 0:
-            value = float(
-                format(API.soros(value, API.get_profit(active, active_type)), '.2f'))
-            print(f'proxima entrada no valor de: {format_currency(value)}')
-            API.set_time_sleep(400)
+        value = float(format(API.balance(account_type) * 0.06, '.2f'))
+        print(f'proxima entrada no valor de: {format_currency(value)}')
+        API.set_time_sleep(400)
 
     # Se estiver abaixo, verificar se o preço chegou ao nível de suporte pullback
     elif prices[-1] < sma and prices[-1] <= support + threshold and tendencie == "High":
@@ -200,15 +188,9 @@ while True:
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
 
-        if status_check == 'loose':
-            value = float(format(API.balance(account_type) * 0.06, '.2f'))
-            print(f'proxima entrada no valor de: {format_currency(value)}')
-            API.set_time_sleep(400)
-        elif status_check == 'win' and len(wins) > 0:
-            value = float(
-                format(API.soros(value, API.get_profit(active, active_type)), '.2f'))
-            print(f'proxima entrada no valor de: {format_currency(value)}')
-            API.set_time_sleep(400)
+        value = float(format(API.balance(account_type) * 0.06, '.2f'))
+        print(f'proxima entrada no valor de: {format_currency(value)}')
+        API.set_time_sleep(400)
 
     # Se estiver acima, verificar se o preço chegou ao nível de resistência
     elif prices[-1] > sma and prices[-1] >= resistance - threshold and tendencie == "Low":
@@ -218,32 +200,30 @@ while True:
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
 
-        if status_check == 'loose':
-            value = float(format(API.balance(account_type) * 0.06, '.2f'))
-            print(f'proxima entrada no valor de: {format_currency(value)}')
-            API.set_time_sleep(400)
-        elif status_check == 'win' and len(wins) > 0:
-            value = float(
-                format(API.soros(value, API.get_profit(active, active_type)), '.2f'))
-            print(f'proxima entrada no valor de: {format_currency(value)}')
-            API.set_time_sleep(400)
+        value = float(format(API.balance(account_type) * 0.06, '.2f'))
+        print(f'proxima entrada no valor de: {format_currency(value)}')
+        API.set_time_sleep(400)
 
     elif candle_force > 0.264964:
 
-        value = float(format(API.balance(account_type) * 0.06, '.2f'))
         print(
             f'Tentativa de venda Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+        
+        value = float(format(API.balance(account_type) * 0.06, '.2f'))
+        print(f'proxima entrada no valor de: {format_currency(value)}')
         API.set_time_sleep(400)
 
     elif candle_force < -0.264964:
 
-        value = float(format(API.balance(account_type) * 0.06, '.2f'))
         print(
             f'Tentativa de compra Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
+        
+        value = float(format(API.balance(account_type) * 0.06, '.2f'))
+        print(f'proxima entrada no valor de: {format_currency(value)}')
         API.set_time_sleep(400)
 
     else:
