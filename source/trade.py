@@ -75,7 +75,7 @@ elif mkt:
 active_type = 'turbo'
 active = API.get_all_actives()[active_index]
 
-value = float(format(API.balance(account_type) * 0.02, '.2f'))
+value = float(format(API.balance(account_type) * 0.06, '.2f'))
 value = 2 if value < 2 else 20000 if value > 20000 else value
 
 total_candles_df = 15
@@ -166,7 +166,7 @@ while True:
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
 
         if status_check == 'loose':
-            value = float(format(API.balance(account_type) * 0.02, '.2f'))
+            value = float(format(API.balance(account_type) * 0.06, '.2f'))
             print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
         elif status_check == 'win' and len(wins) > 0:
@@ -183,7 +183,7 @@ while True:
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
 
         if status_check == 'loose':
-            value = float(format(API.balance(account_type) * 0.02, '.2f'))
+            value = float(format(API.balance(account_type) * 0.06, '.2f'))
             print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
         elif status_check == 'win' and len(wins) > 0:
@@ -201,7 +201,7 @@ while True:
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
 
         if status_check == 'loose':
-            value = float(format(API.balance(account_type) * 0.02, '.2f'))
+            value = float(format(API.balance(account_type) * 0.06, '.2f'))
             print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
         elif status_check == 'win' and len(wins) > 0:
@@ -219,7 +219,7 @@ while True:
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
 
         if status_check == 'loose':
-            value = float(format(API.balance(account_type) * 0.02, '.2f'))
+            value = float(format(API.balance(account_type) * 0.06, '.2f'))
             print(f'proxima entrada no valor de: {format_currency(value)}')
             API.set_time_sleep(400)
         elif status_check == 'win' and len(wins) > 0:
