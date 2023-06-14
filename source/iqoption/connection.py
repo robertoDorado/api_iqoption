@@ -3,7 +3,6 @@ import time
 from datetime import datetime
 from pytz import timezone
 from components.helpers import *
-import random
 
 
 class BOT_IQ_Option:
@@ -210,18 +209,9 @@ class BOT_IQ_Option:
         value = 2 if value < 2 else 20000 if value > 20000 else value
         return value
 
-    def change_active(self, mkt, otc):
-
-        if mkt:
-            active_index_mkt = [1, 2, 3, 4, 5, 6, 99, 101]
-            random_index = random.randint(0, len(active_index_mkt) - 1)
-            active = self.get_all_actives()[active_index_mkt[random_index]]
-
-        if otc:
-            active_index_otc = [76, 77, 78, 79, 80, 81, 84, 85, 86]
-            random_index = random.randint(0, len(active_index_otc) - 1)
-            active = self.get_all_actives()[active_index_otc[random_index]]
-
+    def change_active(self, index_iter):
+        current_index = next(index_iter)
+        active = self.get_all_actives()[current_index]
         return active
     
     def calculate_stop_loss(self, balance, rate_stop_loss):

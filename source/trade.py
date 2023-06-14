@@ -4,6 +4,7 @@ from components.helpers import *
 import datetime
 import numpy as np
 import getpass
+from itertools import cycle
 
 try:
     grow_rate = get_grow_rate()
@@ -80,6 +81,14 @@ value = 2 if value < 2 else 20000 if value > 20000 else value
 total_candles_df = 15
 threshold = 0.001
 current_hour = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
+
+if mkt:
+    active_index = [1, 2, 3, 4, 5, 6, 99, 101]
+    index_iter = cycle(active_index)
+
+if otc:
+    active_index = [76, 77, 78, 79, 80, 81, 84, 85, 86]
+    index_iter = cycle(active_index)
 
 wins = []
 loss = []
@@ -238,7 +247,6 @@ while True:
         API.set_time_sleep(400)
 
     else:
-        active = API.change_active(mkt, otc)
-        candles = API.get_all_candles(active, 300, total_candles_df)
+        active = API.change_active(index_iter)
 
     API.set_time_sleep(1)
