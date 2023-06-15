@@ -120,20 +120,22 @@ while True:
     tendencie = "High" if prices[-1] > sma else "Low" if prices[-1] < sma else "Equal"
 
     # Variação percentual dos preços do ativo para calculo da tendencia
-    percent_change = [((prices[i] - prices[i-1]) / prices[i-1])
+    percent_change = [((prices[i] - prices[i - 1]) / prices[i - 1])
                       * 100 for i in range(1, len(prices))]
 
     upward_trend = [change > 0 for change in percent_change]
     downward_trend = [change < 0 for change in percent_change]
-    
+
     # Tendencia atual do mercado ingrime
-    downward_trend = float(format((downward_trend.count(True) / len(downward_trend)) * 100, '.2f'))
-    upward_trend = float(format((upward_trend.count(True) / len(upward_trend)) * 100, '.2f'))
+    downward_trend = float(
+        format((downward_trend.count(True) / len(downward_trend)) * 100, '.2f'))
+    upward_trend = float(
+        format((upward_trend.count(True) / len(upward_trend)) * 100, '.2f'))
 
     # Calculo para definir um candle de força
     prices_open = np.array([candle['open'] for candle in candles]).astype(float)
     candle_force = float(
-        format((prices[-1] - prices_open[-1]) / prices_open[-1], '.6f'))
+        format((prices[-1] - prices_open[-1]) / prices_open[-1], '.2f'))
 
     # Definir níveis de suporte e resistência
     support = min(prices)
@@ -144,7 +146,7 @@ while True:
 
     # Calculo do valor estocástico
     k = 100 * (prices[-1] - support) / (resistance - support)
-    
+
     if current_hour.hour > 12:
         print(f'periodo da manha ultrapassado {current_hour.strftime("%H:%M:%S")}')
         exit()
@@ -208,24 +210,24 @@ while True:
         print(f'proxima entrada no valor de: {format_currency(value)}')
         API.set_time_sleep(400)
 
-    elif candle_force > 0.248006 and candle_force < 0.273738:
+    elif candle_force >= 0.24:
 
         print(
             f'Tentativa de venda Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-        
+
         value = float(format(API.balance(account_type) * 0.06, '.2f'))
         print(f'proxima entrada no valor de: {format_currency(value)}')
         API.set_time_sleep(400)
 
-    elif candle_force > -0.248006 and candle_force < -0.273738:
+    elif candle_force <= -0.24:
 
         print(
             f'Tentativa de compra Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-        
+
         value = float(format(API.balance(account_type) * 0.06, '.2f'))
         print(f'proxima entrada no valor de: {format_currency(value)}')
         API.set_time_sleep(400)
