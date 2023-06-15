@@ -208,7 +208,7 @@ while True:
         print(f'proxima entrada no valor de: {format_currency(value)}')
         API.set_time_sleep(400)
 
-    elif candle_force > 0.264964:
+    elif candle_force > 0.248006 and candle_force < 0.273738:
 
         print(
             f'Tentativa de venda Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
@@ -219,7 +219,7 @@ while True:
         print(f'proxima entrada no valor de: {format_currency(value)}')
         API.set_time_sleep(400)
 
-    elif candle_force < -0.264964:
+    elif candle_force > -0.248006 and candle_force < -0.273738:
 
         print(
             f'Tentativa de compra Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
