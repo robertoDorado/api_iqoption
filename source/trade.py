@@ -105,19 +105,19 @@ print(f'gerenciamento: {goal_win}X{goal_loss}')
 print('processando algoritmo')
 
 while True:
-
+    
+    start = False
     candles = API.get_all_candles(active, 300, total_candles_df)
 
     # Obtém a hora atual em Brasília
     current_hour = datetime.datetime.now(
         datetime.timezone(datetime.timedelta(hours=-3)))
+    
+    if current_hour.minute % 5 == 0:
+        start = True
 
-    # Calcular a média móvel simples (SMA) dos últimos n períodos
+    # Preços de fechamento dos ativos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
-    sma = np.mean(prices)
-
-    # Tendencia atual do mercado
-    tendencie = "High" if prices[-1] > sma else "Low" if prices[-1] < sma else "Equal"
 
     # Variação percentual dos preços do ativo para calculo da tendencia
     percent_change = [((prices[i] - prices[i - 1]) / prices[i - 1])
@@ -146,10 +146,6 @@ while True:
 
     # Calculo do valor estocástico
     k = 100 * (prices[-1] - support) / (resistance - support)
-
-    if current_hour.hour > 12:
-        print(f'periodo da manha ultrapassado {current_hour.strftime("%H:%M:%S")}')
-        exit()
 
     if API.balance(account_type) >= goal:
         print('meta batida')
@@ -212,7 +208,7 @@ while True:
         API.set_time_sleep(400)
 
     # Verificação pullback em tendência de alta
-    elif prices[-1] < sma and prices[-1] <= support + threshold and tendencie == "High":
+    elif prices[-1] <= support + threshold and upward_trend > 80 and start:
 
         print(
             f'Tentativa de compra Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
@@ -224,7 +220,7 @@ while True:
         API.set_time_sleep(400)
 
     # Verificação pullback em tendência de baixa
-    elif prices[-1] > sma and prices[-1] >= resistance - threshold and tendencie == "Low":
+    elif prices[-1] >= resistance - threshold and downward_trend > 80 and start:
 
         print(
             f'Tentativa de venda Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
