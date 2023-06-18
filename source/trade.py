@@ -115,7 +115,7 @@ while True:
 
     # Preços de fechamento dos ativos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
-    value = float(format(API.balance(account_type) * 0.06, '.2f'))
+    value = float(format(API.balance(account_type) * 0.01, '.2f'))
     
     # Reajuste no preço de entrada
     value = 2 if value < 2 else 20000 if value > 20000 else value
