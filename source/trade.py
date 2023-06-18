@@ -75,9 +75,6 @@ elif mkt:
 active_type = 'turbo'
 active = API.get_all_actives()[active_index]
 
-value = float(format(API.balance(account_type) * 0.06, '.2f'))
-value = 2 if value < 2 else 20000 if value > 20000 else value
-
 total_candles_df = 15
 threshold = 0.001
 current_hour = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
@@ -98,7 +95,6 @@ print(f'tipo de conta: {account_type}')
 print(f'capital: {format_currency(balance)}')
 print(f'meta do dia: {format_currency(goal)}')
 print(f'stop loss: {format_currency(value_stop_loss)}')
-print(f'primeiro valor de entrada: {format_currency(value)}')
 print(f'ativo: {active}')
 print(f'payoff: {API.get_profit(active, active_type) * 100}%')
 print(f'gerenciamento: {goal_win}X{goal_loss}')
@@ -108,6 +104,7 @@ while True:
     
     start = False
     candles = API.get_all_candles(active, 300, total_candles_df)
+    profit = API.get_profit(active, active_type)
 
     # Obtém a hora atual em Brasília
     current_hour = datetime.datetime.now(
@@ -118,6 +115,10 @@ while True:
 
     # Preços de fechamento dos ativos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
+    value = float(format(API.balance(account_type) * 0.06, '.2f'))
+    
+    # Reajuste no preço de entrada
+    value = 2 if value < 2 else 20000 if value > 20000 else value
 
     # Variação percentual dos preços do ativo para calculo da tendencia
     percent_change = [((prices[i] - prices[i - 1]) / prices[i - 1])
@@ -141,9 +142,6 @@ while True:
     support = min(prices)
     resistance = max(prices)
 
-    # Reajuste no preço de entrada
-    value = 2 if value < 2 else 20000 if value > 20000 else value
-
     # Calculo do valor estocástico
     k = 100 * (prices[-1] - support) / (resistance - support)
 
@@ -165,10 +163,7 @@ while True:
         print(
             f'Tentativa de venda Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.put_decision(
-            value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-        value = float(format(API.balance(account_type) * 0.06, '.2f'))
-        print(f'proxima entrada no valor de: {format_currency(value)}')
+            value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
 
     # Verificação de um candle de força vendedora
@@ -177,58 +172,43 @@ while True:
         print(
             f'Tentativa de compra Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
-            value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-        value = float(format(API.balance(account_type) * 0.06, '.2f'))
-        print(f'proxima entrada no valor de: {format_currency(value)}')
+            value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
 
     # Verificação estocastico força alta compradora
-    elif k > 80 and upward_trend > 80:
+    elif k > 80 and upward_trend > 75 and start:
 
         print(
             f'Tentativa de venda Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.put_decision(
-            value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-        value = float(format(API.balance(account_type) * 0.06, '.2f'))
-        print(f'proxima entrada no valor de: {format_currency(value)}')
+            value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
 
     # Verificação estocastico força alta vendedora
-    elif k < 20 and downward_trend > 80:
+    elif k < 20 and downward_trend > 75 and start:
 
         print(
             f'Tentativa de compra Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
-            value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-        value = float(format(API.balance(account_type) * 0.06, '.2f'))
-        print(f'proxima entrada no valor de: {format_currency(value)}')
+            value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
 
     # Verificação pullback em tendência de alta
-    elif prices[-1] <= support + threshold and upward_trend > 80 and start:
+    elif prices[-1] <= support + threshold and upward_trend > 75 and start:
 
         print(
             f'Tentativa de compra Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
-            value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-        value = float(format(API.balance(account_type) * 0.06, '.2f'))
-        print(f'proxima entrada no valor de: {format_currency(value)}')
+            value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
 
     # Verificação pullback em tendência de baixa
-    elif prices[-1] >= resistance - threshold and downward_trend > 80 and start:
+    elif prices[-1] >= resistance - threshold and downward_trend > 75 and start:
 
         print(
             f'Tentativa de venda Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.put_decision(
-            value=value, active=active, wins=wins, stop_loss=loss, payoff=API.get_profit(active, active_type) * 100, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
-
-        value = float(format(API.balance(account_type) * 0.06, '.2f'))
-        print(f'proxima entrada no valor de: {format_currency(value)}')
+            value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
         
     else:
