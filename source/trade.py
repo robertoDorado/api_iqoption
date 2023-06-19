@@ -71,6 +71,12 @@ if otc:
     active_index = 76
 elif mkt:
     active_index = 1
+    
+try:
+    trend_variation_percent = int(input('qual será a variação percentual da tendência: '))
+except ValueError:
+    print('valor inválido da variação percewntual da tenência')
+    exit()
 
 active_type = 'turbo'
 active = API.get_all_actives()[active_index]
@@ -176,37 +182,37 @@ while True:
         API.set_time_sleep(400)
 
     # Verificação estocastico força alta compradora
-    elif k > 80 and upward_trend > 75 and start:
+    elif k > 80 and upward_trend > trend_variation_percent and start:
 
         print(
-            f'Tentativa de venda Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+            f'Tentativa de venda Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de alta: {upward_trend}%')
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
 
     # Verificação estocastico força alta vendedora
-    elif k < 20 and downward_trend > 75 and start:
+    elif k < 20 and downward_trend > trend_variation_percent and start:
 
         print(
-            f'Tentativa de compra Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+            f'Tentativa de compra Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de baixa: {downward_trend}%')
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
 
     # Verificação pullback em tendência de alta
-    elif prices[-1] <= support + threshold and upward_trend > 75 and start:
+    elif prices[-1] <= support + threshold and upward_trend > trend_variation_percent and start:
 
         print(
-            f'Tentativa de compra Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+            f'Tentativa de compra Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de alta: {upward_trend}%')
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
 
     # Verificação pullback em tendência de baixa
-    elif prices[-1] >= resistance - threshold and downward_trend > 75 and start:
+    elif prices[-1] >= resistance - threshold and downward_trend > trend_variation_percent and start:
 
         print(
-            f'Tentativa de venda Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+            f'Tentativa de venda Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de baixa: {downward_trend}%')
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
