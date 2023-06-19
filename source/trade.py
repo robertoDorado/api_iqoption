@@ -96,6 +96,8 @@ if otc:
 wins = []
 loss = []
 
+limiar_volatility = 0.05
+
 print(f'horas: {current_hour.strftime("%H:%M:%S")}')
 print(f'tipo de conta: {account_type}')
 print(f'capital: {format_currency(balance)}')
@@ -109,6 +111,8 @@ print('processando algoritmo')
 while True:
     
     start = False
+    volatility = False
+    
     candles = API.get_all_candles(active, 300, total_candles_df)
     profit = API.get_profit(active, active_type)
 
@@ -122,6 +126,19 @@ while True:
     # Preços de fechamento dos ativos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
     value = float(format(API.balance(account_type) * 0.01, '.2f'))
+    
+    # Calcular o retorno dos preços em variação percentual
+    returns_variation_percent = np.diff(prices) / prices[:-1]
+    
+    # Calculo da uma variância amostral
+    sample_variance = float(format(np.var(returns_variation_percent, ddof=1), '.2f'))
+    
+    # Calculo da voltilidade do preço
+    volatility_price = float(format(np.sqrt(sample_variance), '.2f'))
+    
+    # Verificar se o ativo está com os preços voláteis
+    if volatility_price >= limiar_volatility:
+        volatility = True
     
     # Reajuste no preço de entrada
     value = 2 if value < 2 else 20000 if value > 20000 else value
@@ -186,7 +203,7 @@ while True:
         API.set_time_sleep(400)
 
     # Verificação estocastico força alta compradora
-    elif k > 80 and upward_trend > trend_variation_percent and start:
+    elif k > 80 and upward_trend > trend_variation_percent and volatility == False and start:
 
         print(
             f'Tentativa de venda Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de alta: {upward_trend}%')
@@ -195,7 +212,7 @@ while True:
         API.set_time_sleep(400)
 
     # Verificação estocastico força alta vendedora
-    elif k < 20 and downward_trend > trend_variation_percent and start:
+    elif k < 20 and downward_trend > trend_variation_percent and volatility == False and start:
 
         print(
             f'Tentativa de compra Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de baixa: {downward_trend}%')
@@ -204,7 +221,7 @@ while True:
         API.set_time_sleep(400)
 
     # Verificação pullback em tendência de alta
-    elif prices[-1] <= support + threshold and upward_trend > trend_variation_percent and start:
+    elif prices[-1] <= support + threshold and upward_trend > trend_variation_percent and volatility == False and start:
 
         print(
             f'Tentativa de compra Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de alta: {upward_trend}%')
@@ -213,7 +230,7 @@ while True:
         API.set_time_sleep(400)
 
     # Verificação pullback em tendência de baixa
-    elif prices[-1] >= resistance - threshold and downward_trend > trend_variation_percent and start:
+    elif prices[-1] >= resistance - threshold and downward_trend > trend_variation_percent and volatility == False and start:
 
         print(
             f'Tentativa de venda Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de baixa: {downward_trend}%')
