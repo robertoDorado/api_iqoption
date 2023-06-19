@@ -130,11 +130,8 @@ while True:
     # Calcular o retorno dos preços em variação percentual
     returns_variation_percent = np.diff(prices) / prices[:-1]
     
-    # Calculo da uma variância amostral
-    sample_variance = float(format(np.var(returns_variation_percent, ddof=1), '.2f'))
-    
-    # Calculo da voltilidade do preço
-    volatility_price = float(format(np.sqrt(sample_variance), '.2f'))
+    # Calculo da volatilidade usando o desvio padrão
+    volatility_price = float(format(np.std(returns_variation_percent) * np.sqrt(252), '.2f'))
     
     # Verificar se o ativo está com os preços voláteis
     if volatility_price >= limiar_volatility:
