@@ -71,9 +71,10 @@ if otc:
     active_index = 76
 elif mkt:
     active_index = 1
-    
+
 try:
-    trend_variation_percent = int(input('qual será a variação percentual da tendência: '))
+    trend_variation_percent = int(
+        input('qual será a variação percentual da tendência: '))
 except ValueError:
     print('valor inválido da variação percewntual da tenência')
     exit()
@@ -109,34 +110,39 @@ print(f'gerenciamento: {goal_win}X{goal_loss}')
 print('processando algoritmo')
 
 while True:
-    
+
     start = False
     volatility = False
-    
+
     candles = API.get_all_candles(active, 300, total_candles_df)
     profit = API.get_profit(active, active_type)
 
     # Obtém a hora atual em Brasília
     current_hour = datetime.datetime.now(
         datetime.timezone(datetime.timedelta(hours=-3)))
-    
-    if current_hour.minute % 5 == 0:
+
+    # Obtém o horário da corretora
+    borker_time = datetime.datetime.now(
+        datetime.timezone(datetime.timedelta(hours=-3, minutes=-1, seconds=34)))
+
+    if borker_time.minute % 5 == 0:
         start = True
 
     # Preços de fechamento dos ativos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
     value = float(format(API.balance(account_type) * 0.01, '.2f'))
-    
+
     # Calcular o retorno dos preços em variação percentual
     returns_variation_percent = np.diff(prices) / prices[:-1]
-    
+
     # Calculo da volatilidade usando o desvio padrão
-    volatility_price = float(format(np.std(returns_variation_percent) * np.sqrt(252), '.2f'))
-    
+    volatility_price = float(
+        format(np.std(returns_variation_percent) * np.sqrt(252), '.2f'))
+
     # Verificar se o ativo está com os preços voláteis
     if volatility_price >= limiar_volatility:
         volatility = True
-    
+
     # Reajuste no preço de entrada
     value = 2 if value < 2 else 20000 if value > 20000 else value
 
@@ -164,7 +170,7 @@ while True:
 
     # Calculo do valor estocástico
     k = 100 * (prices[-1] - support) / (resistance - support)
-    
+
     if current_hour.hour > 12:
         print('horario do pregão encerrado')
         exit()
@@ -180,12 +186,12 @@ while True:
     if value > API.balance(account_type):
         print('stop loss acionado')
         exit()
-    
+
     # Verificação de um candle de força compradora
     if candle_force >= 0.24:
 
         print(
-            f'Tentativa de venda Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+            f'Tentativa de venda Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, corretora: {borker_time.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
@@ -194,7 +200,7 @@ while True:
     elif candle_force <= -0.24:
 
         print(
-            f'Tentativa de compra Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}')
+            f'Tentativa de compra Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, corretora: {borker_time.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
@@ -203,7 +209,7 @@ while True:
     elif k > 80 and upward_trend > trend_variation_percent and volatility == False and start:
 
         print(
-            f'Tentativa de venda Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de alta: {upward_trend}%')
+            f'Tentativa de venda Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de alta: {upward_trend}%, corretora: {borker_time.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
@@ -212,7 +218,7 @@ while True:
     elif k < 20 and downward_trend > trend_variation_percent and volatility == False and start:
 
         print(
-            f'Tentativa de compra Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de baixa: {downward_trend}%')
+            f'Tentativa de compra Estocastico {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de baixa: {downward_trend}%, corretora: {borker_time.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
@@ -221,7 +227,7 @@ while True:
     elif prices[-1] <= support + threshold and upward_trend > trend_variation_percent and volatility == False and start:
 
         print(
-            f'Tentativa de compra Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de alta: {upward_trend}%')
+            f'Tentativa de compra Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de alta: {upward_trend}%, corretora: {borker_time.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.call_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
@@ -230,11 +236,11 @@ while True:
     elif prices[-1] >= resistance - threshold and downward_trend > trend_variation_percent and volatility == False and start:
 
         print(
-            f'Tentativa de venda Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de baixa: {downward_trend}%')
+            f'Tentativa de venda Pullback {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, tendência de baixa: {downward_trend}%, corretora: {borker_time.strftime("%H:%M:%S")}')
         status, status_check, wins, loss = API.put_decision(
             value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type)
         API.set_time_sleep(400)
-        
+
     else:
         active = API.change_active(index_iter)
 
