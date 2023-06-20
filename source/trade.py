@@ -162,7 +162,7 @@ while True:
     # Calculo para definir um candle de força
     prices_open = np.array([candle['open'] for candle in candles]).astype(float)
     candle_force = float(
-        format((prices[-1] - prices_open[-1]) / prices_open[-1], '.2f'))
+        format((prices[-1] - prices_open[-1]) / prices_open[-1] * 100, '.2f'))
 
     # Definir níveis de suporte e resistência
     support = min(prices)
@@ -188,7 +188,7 @@ while True:
         exit()
 
     # Verificação de um candle de força compradora
-    if candle_force >= 0.24:
+    if candle_force >= 0.24 and volatility == False:
 
         print(
             f'Tentativa de venda Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, corretora: {borker_time.strftime("%H:%M:%S")}')
@@ -197,7 +197,7 @@ while True:
         API.set_time_sleep(400)
 
     # Verificação de um candle de força vendedora
-    elif candle_force <= -0.24:
+    elif candle_force <= -0.24 and volatility == False:
 
         print(
             f'Tentativa de compra Candle de Força {format_currency(value)}, ativo: {active}, horas: {current_hour.strftime("%H:%M:%S")}, corretora: {borker_time.strftime("%H:%M:%S")}')
