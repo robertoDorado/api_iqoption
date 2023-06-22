@@ -4,6 +4,7 @@ from datetime import datetime
 from pytz import timezone
 from components.helpers import *
 from scipy.stats import norm
+from scipy import stats
 
 
 class BOT_IQ_Option:
@@ -224,3 +225,6 @@ class BOT_IQ_Option:
     def normal_distribution(self, mean, std, value, param):
         z = (value - mean) / std
         return norm.sf(z) if param == 'High' else norm.cdf(z) if param == 'Low' else None
+    
+    def shap(self, data):
+        return stats.shapiro(data)

@@ -153,6 +153,13 @@ while True:
 
     # Calculo de 1% do valor de entrada
     value = float(format(API.balance(account_type) * 0.01, '.2f'))
+    
+    # Análise dos dados normalizados utilizando shapiro wilk
+    statistic, pvalue = API.shap(prices)
+    
+    # Verificação dos dados shapiro wilk
+    if statistic < 0.9 or pvalue < 0.5:
+        continue
 
     # Calculo da distribuição normal para projetar o preço atual do ativo
     current_price_probability_high = float(
