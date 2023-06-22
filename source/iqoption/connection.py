@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 from pytz import timezone
 from components.helpers import *
+from scipy.stats import norm
 
 
 class BOT_IQ_Option:
@@ -112,9 +113,9 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
 
-    def call_decision(self, value, active, wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None):
+    def call_decision(self, value, active, wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5):
         if self.balance(account_type) >= value:
-            status, id = self.call_or_put(value, active, 'call', 5)
+            status, id = self.call_or_put(value, active, 'call', timestamp)
         else:
             print('saldo insuficiente')
             exit()
@@ -149,9 +150,9 @@ class BOT_IQ_Option:
 
         return status, status_check, wins, stop_loss
 
-    def put_decision(self, value, active, wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None):
+    def put_decision(self, value, active, wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5):
         if self.balance(account_type) >= value:
-            status, id = self.call_or_put(value, active, 'put', 5)
+            status, id = self.call_or_put(value, active, 'put', timestamp)
         else:
             print('saldo insuficiente')
             exit()
@@ -219,3 +220,7 @@ class BOT_IQ_Option:
     
     def calculate_goal(self, balance, rate_goal):
         return balance + (balance * rate_goal)
+    
+    def normal_distribution(self, mean, std, value, param):
+        z = (value - mean) / std
+        return norm.sf(z) if param == 'High' else norm.cdf(z) if param == 'Low' else None
