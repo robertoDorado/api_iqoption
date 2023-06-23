@@ -157,8 +157,9 @@ while True:
     # Análise dos dados normalizados utilizando shapiro wilk
     statistic, pvalue = API.shap(prices)
     
-    # Verificação dos dados shapiro wilk
+    # Filtrando os conjuntos normalizados shapiro wilk
     if statistic < 0.9 or pvalue < 0.5:
+        active = API.change_active(index_iter)
         continue
 
     # Calculo da distribuição normal para projetar o preço atual do ativo
