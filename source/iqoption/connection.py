@@ -4,7 +4,6 @@ from datetime import datetime
 from pytz import timezone
 from components.helpers import *
 from scipy.stats import norm
-from scipy import stats
 
 
 class BOT_IQ_Option:
@@ -42,15 +41,6 @@ class BOT_IQ_Option:
         except Exception:
             print('is not a valid active')
 
-    def get_current_timestamp(self):
-        return self.current_timestamp
-
-    def convert_timestamp(self, timestamp=time.time(), tz='America/Sao_Paulo'):
-        return datetime.fromtimestamp(timestamp, timezone(tz))
-
-    def merge_candles(self, candle_a, candle_b):
-        return candle_a + candle_b
-
     def set_time_sleep(self, value):
         return time.sleep(value)
 
@@ -61,14 +51,6 @@ class BOT_IQ_Option:
 
         self.instance.stop_candles_stream(active, size)
         return ticks
-
-    def get_mood_traders(self, active='EURUSD'):
-
-        self.instance.start_mood_stream(active)
-        mood = self.instance.get_traders_mood(active)
-
-        self.instance.stop_mood_stream(active)
-        return mood
 
     def get_all_actives(self, act=True):
 
@@ -114,7 +96,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
 
-    def call_decision(self, value, active, wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5):
+    def call_decision(self, index_iter=1, value=2, active='EURUSD', wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5, active_index=[]):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'call', timestamp)
         else:
@@ -147,11 +129,13 @@ class BOT_IQ_Option:
             print(f'ativo {active} indisponivel')
             status = False
             status_check = ''
-            self.set_time_sleep(400)
+            
+            if index_iter in active_index:
+                active_index.remove(index_iter)
 
-        return status, status_check, wins, stop_loss
+        return status, status_check, wins, stop_loss, active_index, index_iter
 
-    def put_decision(self, value, active, wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5):
+    def put_decision(self, index_iter=1, active_index=[], value=2, active='EURUSD', wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'put', timestamp)
         else:
@@ -185,31 +169,11 @@ class BOT_IQ_Option:
             print(f'ativo {active} indisponivel')
             status = False
             status_check = ''
-            self.set_time_sleep(400)
+            
+            if index_iter in active_index:
+                active_index.remove(index_iter)
 
-        return status, status_check, wins, stop_loss
-
-    def closest(self, lst, K):
-        return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - K))]
-
-    def kelly(self, b, p, q):
-        return (b * p - q) / b
-    
-    def soros(self, base_value, payoff):
-        return (base_value * payoff) + base_value
-    
-    def martingale(self, base_value, loss):
-        return base_value * (2 ** loss)
-
-    def probability_on_input(self, account_type, payoff, total_win, total_registers, total_loss):
-
-        balance = self.balance(account_type)
-        fraction = self.kelly(payoff, float(format(
-            total_win / total_registers, '.2f')), float(format(total_loss / total_registers, '.2f')))
-
-        value = float(format(balance * fraction, '.2f'))
-        value = 2 if value < 2 else 20000 if value > 20000 else value
-        return value
+        return status, status_check, wins, stop_loss, active_index, index_iter
 
     def change_active(self, index_iter):
         current_index = next(index_iter)
@@ -225,6 +189,3 @@ class BOT_IQ_Option:
     def normal_distribution(self, mean, std, value, param):
         z = (value - mean) / std
         return norm.sf(z) if param == 'High' else norm.cdf(z) if param == 'Low' else None
-    
-    def shap(self, data):
-        return stats.shapiro(data)
