@@ -95,7 +95,7 @@ if mkt:
     index_iter = cycle(active_index)
 
 if otc:
-    active_index = [76, 77, 78, 79, 80, 81, 84, 85, 86]
+    active_index = [76, 77, 79, 81, 84, 85, 1381, 1380, 1382]
     index_iter = cycle(active_index)
 
 wins = []
@@ -166,11 +166,20 @@ while True:
     percent_change = [((prices[i] - prices[i - 1]) / prices[i - 1])
                       * 100 for i in range(1, len(prices))]
 
+    # Desvio padrão da tendência
+    trend_std = np.std(percent_change)
+    
     # Média da tendência
     trend_sma = np.mean(percent_change) * 100
-
-    # Calculo para definir um candle de força
-    prices_open = np.array([candle['open'] for candle in candles]).astype(float)
+    
+    # Total da minha amostra
+    n = len(percent_change)
+    
+    # Calculo da margem de erro com 95% de nivel de confiança
+    margin_of_error = 1.96 * (trend_std / np.sqrt(n))
+    
+    # definindo a tendência minima de confiança
+    trend_minium = trend_sma - margin_of_error
 
     # Definir níveis de suporte e resistência
     support = min(prices)
@@ -197,19 +206,19 @@ while True:
         exit()
 
     print(f'Ativo: {active}')
-    print(f'Estocastico: {k}%')
-    print(f'Media da tendência: {trend_sma}%')
-    print(f'Probabilidade do preço em alta: {current_price_probability_high}%')
-    print(f'Probabilidade do preço em baixa: {current_price_probability_low}%')
+    print(f'Estocastico: {format(k, ".2f")}%')
+    print(f'Media da tendência: {format(trend_sma, ".2f")}%')
+    print(f'Probabilidade do preço em alta: {format(current_price_probability_high, ".2f")}%')
+    print(f'Probabilidade do preço em baixa: {format(current_price_probability_low, ".2f")}%')
     print(f'-----------------')
 
     # Verificação estocastico força alta compradora
-    if k > 60 and trend_sma > 1 and current_price_probability_high > 55 and volatility == False and start:
+    if k > 60 and trend_minium > 0.5 and current_price_probability_high > 55 and volatility == False and start:
 
         print(f'Tentativa de compra Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
         print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
-        print(f'Tendência de alta: {trend_sma}%')
+        print(f'Tendência de alta: {format(trend_sma, ".2f")}%')
         print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
         print(
             f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
@@ -222,12 +231,12 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação estocastico força alta vendedora
-    elif k < 40 and trend_sma < -1 and current_price_probability_low > 55 and volatility == False and start:
+    elif k < 40 and trend_minium < -0.5 and current_price_probability_low > 55 and volatility == False and start:
 
         print(f'Tentativa de venda Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
         print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
-        print(f'Tendência de baixa: {trend_sma}%')
+        print(f'Tendência de baixa: {format(trend_sma, ".2f")}%')
         print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
         print(f'Probabilidade do preço atual em baixa {current_price_probability_low}%')
 
@@ -239,15 +248,15 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação pullback em tendência de alta
-    elif prices[-1] <= support + threshold and current_price_probability_high > 55 and trend_sma > 1 and volatility == False and start:
+    elif prices[-1] <= support + threshold and current_price_probability_high > 55 and trend_minium > 0.5 and volatility == False and start:
 
         print(f'Tentativa de compra Pullback {format_currency(value)}')
         print(f'Ativo: {active}')
         print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
-        print(f'Tendência de alta: {trend_sma}%')
+        print(f'Tendência de alta: {format(trend_sma, ".2f")}%')
         print(f'Horas na Corretora: {borker_time.strftime("%H:%M:%S")}')
         print(
-            f'Probabilidade do preço atual em alta: {current_price_probability_high}%')
+            f'Probabilidade do preço atual em alta: {format(current_price_probability_high, ".2f")}%')
 
         if current_price_probability_high > 70:
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
@@ -257,15 +266,15 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação pullback em tendência de baixa
-    elif prices[-1] >= resistance - threshold and trend_sma < -1 and current_price_probability_low > 55 and volatility == False and start:
+    elif prices[-1] >= resistance - threshold and trend_minium < -0.5 and current_price_probability_low > 55 and volatility == False and start:
 
         print(f'Tentativa de venda Pullback {format_currency(value)}')
         print(f'Ativo: {active}')
         print(f'horas: {current_hour.strftime("%H:%M:%S")}')
-        print(f'Tendência de baixa: {trend_sma}%')
+        print(f'Tendência de baixa: {format(trend_sma, ".2f")}%')
         print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
         print(
-            f'Probabilidade do preço atual em baixa: {current_price_probability_low}%')
+            f'Probabilidade do preço atual em baixa: {format(current_price_probability_low, ".2f")}%')
 
         if current_price_probability_low > 70:
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
