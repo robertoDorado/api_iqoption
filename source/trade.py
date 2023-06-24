@@ -218,7 +218,7 @@ while True:
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
             value = 2 if value < 2 else 20000 if value > 20000 else value
 
-        status, status_check, wins, loss, active_index, index_iter = API.call_decision(
+        status, status_check, wins, loss = API.call_decision(
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação estocastico força alta vendedora
@@ -235,7 +235,7 @@ while True:
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
             value = 2 if value < 2 else 20000 if value > 20000 else value
 
-        status, status_check, wins, loss, active_index, index_iter = API.put_decision(
+        status, status_check, wins, loss = API.put_decision(
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação pullback em tendência de alta
@@ -253,7 +253,7 @@ while True:
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
             value = 2 if value < 2 else 20000 if value > 20000 else value
 
-        status, status_check, wins, loss, active_index, index_iter = API.call_decision(
+        status, status_check, wins, loss = API.call_decision(
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação pullback em tendência de baixa
@@ -271,7 +271,7 @@ while True:
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
             value = 2 if value < 2 else 20000 if value > 20000 else value
 
-        status, status_check, wins, loss, active_index, index_iter = API.put_decision(
+        status, status_check, wins, loss = API.put_decision(
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     else:
