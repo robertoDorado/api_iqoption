@@ -148,10 +148,8 @@ while True:
     value = float(format(API.balance(account_type) * 0.01, '.2f'))
 
     # Calculo da distribuição normal para projetar o preço atual do ativo
-    current_price_probability_high = float(
-        format(API.normal_distribution(sma, std, prices[-1], 'High') * 100, '.2f'))
-    current_price_probability_low = float(
-        format(API.normal_distribution(sma, std, prices[-1], 'Low') * 100, '.2f'))
+    current_price_probability_high = API.normal_distribution(sma, std, prices[-1], 'High') * 100
+    current_price_probability_low = API.normal_distribution(sma, std, prices[-1], 'Low') * 100
 
     # Calculo da volatilidade usando o desvio padrão
     volatility_price = float(
@@ -201,6 +199,8 @@ while True:
     print(f'Ativo: {active}')
     print(f'Estocastico: {k}%')
     print(f'Media da tendência: {trend_sma}%')
+    print(f'Probabilidade do preço em alta: {current_price_probability_high}%')
+    print(f'Probabilidade do preço em baixa: {current_price_probability_low}%')
     print(f'-----------------')
 
     # Verificação estocastico força alta compradora
