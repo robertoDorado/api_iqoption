@@ -96,7 +96,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return candles
 
-    def call_decision(self, index_iter=1, active='EURUSD', value=2, wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5, active_index=[]):
+    def call_decision(self, index_iter=1, active_index=[], value=2, active='EURUSD', wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'call', timestamp)
         else:
