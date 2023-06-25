@@ -208,6 +208,7 @@ while True:
     print(f'Ativo: {active}')
     print(f'Estocastico: {format(k, ".2f")}%')
     print(f'Media da tendência: {format(trend_sma, ".2f")}%')
+    print(f'Minima da tendência: {format(trend_minium, ".2f")}%')
     print(f'Probabilidade do preço em alta: {format(current_price_probability_high, ".2f")}%')
     print(f'Probabilidade do preço em baixa: {format(current_price_probability_low, ".2f")}%')
     print(f'-----------------')
