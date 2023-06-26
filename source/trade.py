@@ -206,11 +206,11 @@ while True:
         exit()
 
     print(f'Ativo: {active}')
-    print(f'Estocastico: {format(k, ".2f")}%')
-    print(f'Media da tendência: {format(trend_sma, ".2f")}%')
-    print(f'Minima da tendência: {format(trend_minium, ".2f")}%')
-    print(f'Probabilidade do preço em alta: {format(current_price_probability_high, ".2f")}%')
-    print(f'Probabilidade do preço em baixa: {format(current_price_probability_low, ".2f")}%')
+    print(f'Estocastico: {k}%')
+    print(f'Media da tendência: {trend_sma}%')
+    print(f'Minima da tendência: {trend_minium}%')
+    print(f'Probabilidade do preço em alta: {current_price_probability_high}%')
+    print(f'Probabilidade do preço em baixa: {current_price_probability_low}%')
     print(f'-----------------')
 
     # Verificação estocastico força alta compradora
