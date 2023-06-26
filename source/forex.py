@@ -57,7 +57,6 @@ if otc:
 elif mkt:
     active_index = 1
 
-active_type = 'turbo'
 active = API.get_all_actives()[active_index]
 
 try:
@@ -66,7 +65,6 @@ except ValueError:
     print('definição de gráfico inválido')
     exit()
 
-threshold = 0.001
 current_hour = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
 
 if mkt:
@@ -90,21 +88,8 @@ print('processando algoritmo')
 
 while True:
 
-    start = False
-
+    # Amostra do ativo
     candles = API.get_realtime_candles(active, 300, total_candles_df)
-    profit = API.get_profit(active, active_type)
-
-    # Obtém a hora atual em Brasília
-    current_hour = datetime.datetime.now(
-        datetime.timezone(datetime.timedelta(hours=-3)))
-
-    # Obtém o horário da corretora
-    borker_time = datetime.datetime.now(
-        datetime.timezone(datetime.timedelta(hours=-3, minutes=-1, seconds=34)))
-
-    if borker_time.minute % 5 == 0:
-        start = True
 
     # Preços de fechamento dos ativos
     prices = np.array([candle['close'] for candle in candles]).astype(float)
@@ -118,9 +103,6 @@ while True:
     # Calculo do desvio padrão
     std = np.std(returns_variation_percent)
 
-    # Calculo de 1% do valor de entrada
-    value = float(format(API.balance(account_type) * 0.01, '.2f'))
-
     # Calculo da distribuição normal para projetar o preço atual do ativo
     current_price_probability_high = API.normal_distribution(sma, std, prices[-1], 'High') * 100
     current_price_probability_low = API.normal_distribution(sma, std, prices[-1], 'Low') * 100
@@ -132,9 +114,6 @@ while True:
     # Verificar se o ativo está com os preços voláteis
     if volatility_price >= limiar_volatility:
         continue
-
-    # Reajuste no preço de entrada
-    value = 2 if value < 2 else 20000 if value > 20000 else value
 
     # Variação percentual dos preços do ativo para calculo da tendencia
     percent_change = [((prices[i] - prices[i - 1]) / prices[i - 1])
@@ -161,10 +140,6 @@ while True:
 
     # Calculo do valor estocástico
     k = 100 * (prices[-1] - support) / (resistance - support)
-
-    if value > API.balance(account_type):
-        print('stop loss acionado')
-        exit()
 
     print(f'Ativo: {active}')
     print(f'Estocastico: {k}%')
