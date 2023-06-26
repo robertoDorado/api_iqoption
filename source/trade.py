@@ -209,32 +209,32 @@ while True:
     print(f'-----------------')
 
     # Verificação estocastico força alta compradora
-    if k > 60 and trend_minium > 0.5 and current_price_probability_high > 55 and volatility == False and start:
+    if k > 80 and trend_minium > 0.5 and current_price_probability_high > 55 and volatility == False and start:
 
-        print(f'Tentativa de compra Estocastico {format_currency(value)}')
+        print(f'Tentativa de venda Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
         print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
         print(f'Tendência de alta: {format(trend_sma, ".2f")}%')
         print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
         print(
-            f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
+            f'Probabilidade de preço atual em baixa: {current_price_probability_high}%')
 
         if current_price_probability_high > 70:
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
             value = 2 if value < 2 else 20000 if value > 20000 else value
 
-        status, status_check, wins, loss = API.call_decision(
+        status, status_check, wins, loss = API.put_decision(
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação estocastico força alta vendedora
-    elif k < 40 and trend_minium < -0.5 and current_price_probability_low > 55 and volatility == False and start:
+    elif k < 20 and trend_minium < -0.5 and current_price_probability_low > 55 and volatility == False and start:
 
-        print(f'Tentativa de venda Estocastico {format_currency(value)}')
+        print(f'Tentativa de compra Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
         print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
         print(f'Tendência de baixa: {format(trend_sma, ".2f")}%')
         print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
-        print(f'Probabilidade do preço atual em baixa {current_price_probability_low}%')
+        print(f'Probabilidade do preço atual em alta {current_price_probability_low}%')
 
         if current_price_probability_low > 70:
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
