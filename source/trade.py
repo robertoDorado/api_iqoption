@@ -188,11 +188,6 @@ while True:
     # Calculo do valor estocástico
     k = 100 * (prices[-1] - support) / (resistance - support)
 
-    if mkt:
-        if current_hour.hour > 12:
-            print('horario do pregão encerrado')
-            exit()
-
     if API.balance(account_type) >= goal:
         print('meta batida')
         exit()
