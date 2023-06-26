@@ -91,7 +91,6 @@ print('processando algoritmo')
 while True:
 
     start = False
-    volatility = False
 
     candles = API.get_realtime_candles(active, 300, total_candles_df)
     profit = API.get_profit(active, active_type)
@@ -132,7 +131,7 @@ while True:
 
     # Verificar se o ativo está com os preços voláteis
     if volatility_price >= limiar_volatility:
-        volatility = True
+        continue
 
     # Reajuste no preço de entrada
     value = 2 if value < 2 else 20000 if value > 20000 else value
