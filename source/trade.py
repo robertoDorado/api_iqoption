@@ -209,7 +209,7 @@ while True:
     print(f'-----------------')
 
     # Verificação estocastico força alta compradora
-    if k > 80 and trend_minium > 0.5 and current_price_probability_low > 55 and volatility == False and start:
+    if k > 80 and trend_minium > 1 and current_price_probability_low > 55 and volatility == False and start:
 
         print(f'Tentativa de venda Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
@@ -227,7 +227,7 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação estocastico força alta vendedora
-    elif k < 20 and trend_minium < -0.5 and current_price_probability_high > 55 and volatility == False and start:
+    elif k < 20 and trend_minium < -1 and current_price_probability_high > 55 and volatility == False and start:
 
         print(f'Tentativa de compra Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
@@ -240,11 +240,11 @@ while True:
             value = float(format(API.balance(account_type) * 0.02, '.2f'))
             value = 2 if value < 2 else 20000 if value > 20000 else value
 
-        status, status_check, wins, loss = API.put_decision(
+        status, status_check, wins, loss = API.call_decision(
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação pullback em tendência de alta
-    elif prices[-1] <= support + threshold and current_price_probability_high > 55 and trend_minium > 0.5 and volatility == False and start:
+    elif prices[-1] <= support + threshold and current_price_probability_high > 55 and trend_minium > 1 and volatility == False and start:
 
         print(f'Tentativa de compra Pullback {format_currency(value)}')
         print(f'Ativo: {active}')
@@ -262,7 +262,7 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação pullback em tendência de baixa
-    elif prices[-1] >= resistance - threshold and trend_minium < -0.5 and current_price_probability_low > 55 and volatility == False and start:
+    elif prices[-1] >= resistance - threshold and trend_minium < -1 and current_price_probability_low > 55 and volatility == False and start:
 
         print(f'Tentativa de venda Pullback {format_currency(value)}')
         print(f'Ativo: {active}')
