@@ -118,7 +118,7 @@ while True:
     start = False
     volatility = False
 
-    candles = API.get_all_candles(active, 300, total_candles_df)
+    candles = API.get_realtime_candles(active, 300, total_candles_df)
     profit = API.get_profit(active, active_type)
 
     # Obtém a hora atual em Brasília
