@@ -210,7 +210,7 @@ while True:
     print(f'-----------------')
 
     # Verificação estocastico força alta compradora
-    if k > 50 and current_price_probability_high > 70 and trend_minium > 0 and start:
+    if k > 50 and current_price_probability_high >= 70 and trend_minium > 0 and start:
 
         print(f'Tentativa de compra Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
@@ -223,7 +223,7 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação estocastico força alta vendedora
-    elif k < 50 and current_price_probability_low > 70 and trend_minium < 0 and start:
+    elif k < 50 and current_price_probability_low >= 70 and trend_minium < 0 and start:
 
         print(f'Tentativa de venda Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
@@ -236,7 +236,7 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação pullback em tendência de alta
-    elif percent_change[-1] <= support + threshold and current_price_probability_high > 70 and trend_minium > 0 and start:
+    elif percent_change[-1] <= support + threshold and current_price_probability_high >= 70 and trend_minium > 0 and start:
 
         print(f'Tentativa de compra Pullback {format_currency(value)}')
         print(f'Ativo: {active}')
@@ -249,7 +249,7 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação pullback em tendência de baixa
-    elif percent_change[-1] >= resistance - threshold and current_price_probability_low > 70 and trend_minium < 0 and start:
+    elif percent_change[-1] >= resistance - threshold and current_price_probability_low >= 70 and trend_minium < 0 and start:
 
         print(f'Tentativa de venda Pullback {format_currency(value)}')
         print(f'Ativo: {active}')
