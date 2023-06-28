@@ -8,6 +8,9 @@ cnx = mysql.connector.connect(user='labo_root', password='jB1bP1-8Cot%6+Kv',
 
 cursor = cnx.cursor()
 
+def remove_index(index_iter, active_index_mkt):
+    if index_iter in active_index_mkt:
+        active_index_mkt.remove(index_iter)
 
 def format_date():
     return date.today()

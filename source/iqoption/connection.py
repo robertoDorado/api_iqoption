@@ -128,9 +128,7 @@ class BOT_IQ_Option:
             print(f'ativo {active} indisponivel')
             status = False
             status_check = ''
-            
-            if index_iter in active_index:
-                active_index.remove(index_iter)
+            remove_index(index_iter, active_index)
 
         return status, status_check, wins, stop_loss
 
@@ -168,9 +166,7 @@ class BOT_IQ_Option:
             print(f'ativo {active} indisponivel')
             status = False
             status_check = ''
-            
-            if index_iter in active_index:
-                active_index.remove(index_iter)
+            remove_index(index_iter, active_index)
 
         return status, status_check, wins, stop_loss
 
