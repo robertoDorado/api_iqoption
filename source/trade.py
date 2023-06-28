@@ -176,15 +176,6 @@ while True:
 
     # Reajuste no preço de entrada
     value = 2 if value < 2 else 20000 if value > 20000 else value
-    
-    # Total da minha amostra
-    n = len(percent_change)
-    
-    # Calculo da margem de erro com 95% de nivel de confiança
-    margin_of_error = 1.96 * (std / np.sqrt(n))
-    
-    # definindo a tendência minima de confiança
-    trend_minium = sma - margin_of_error
 
     # Definir níveis de suporte e resistência
     support = min(percent_change)
@@ -204,13 +195,12 @@ while True:
     print(f'Ativo: {active}')
     print(f'Estocastico: {k}%')
     print(f'Media da tendência: {sma}%')
-    print(f'Minima da tendência: {trend_minium}%')
     print(f'Probabilidade do preço em alta: {current_price_probability_high}%')
     print(f'Probabilidade do preço em baixa: {current_price_probability_low}%')
     print(f'-----------------')
 
     # Verificação estocastico força alta compradora
-    if k > 50 and current_price_probability_high >= 70 and trend_minium > 0 and start:
+    if k > 40 and k < 50 and current_price_probability_high > 70 and sma > 0 and start:
 
         print(f'Tentativa de compra Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
@@ -223,7 +213,7 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação estocastico força alta vendedora
-    elif k < 50 and current_price_probability_low >= 70 and trend_minium < 0 and start:
+    elif k > 50 and k < 65 and current_price_probability_low > 70 and sma < 0 and start:
 
         print(f'Tentativa de venda Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
@@ -236,7 +226,7 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação pullback em tendência de alta
-    elif percent_change[-1] <= support + threshold and current_price_probability_high >= 70 and trend_minium > 0 and start:
+    elif percent_change[-1] <= support + threshold and current_price_probability_high > 70 and sma > 0 and start:
 
         print(f'Tentativa de compra Pullback {format_currency(value)}')
         print(f'Ativo: {active}')
@@ -249,7 +239,7 @@ while True:
             index_iter=index_iter, active_index=active_index, value=value, active=active, wins=wins, stop_loss=loss, payoff=profit, goal_win=goal_win, goal_loss=goal_loss, account_type=account_type, timestamp=timestamp_candle)
 
     # Verificação pullback em tendência de baixa
-    elif percent_change[-1] >= resistance - threshold and current_price_probability_low >= 70 and trend_minium < 0 and start:
+    elif percent_change[-1] >= resistance - threshold and current_price_probability_low > 70 and sma < 0 and start:
 
         print(f'Tentativa de venda Pullback {format_currency(value)}')
         print(f'Ativo: {active}')
