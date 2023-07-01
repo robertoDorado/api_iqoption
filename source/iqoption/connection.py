@@ -95,7 +95,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return list(candles.values())
 
-    def call_decision(self, index_iter=1, active_index=[], value=2, active='EURUSD', wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5):
+    def call_decision(self, index_iter=None, current_index=1, active_index=[], value=2, active='EURUSD', wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'call', timestamp)
         else:
@@ -125,14 +125,14 @@ class BOT_IQ_Option:
                     print('stop loss acionado')
                     exit()
         else:
-            print(f'ativo {active} indisponivel')
             status = False
             status_check = ''
-            remove_index(index_iter, active_index)
+            print(f'ativo {active} indisponivel')
+            index_iter = remove_index(current_index, active_index)
 
-        return status, status_check, wins, stop_loss
+        return status, status_check, wins, stop_loss, active, current_index, index_iter
 
-    def put_decision(self, index_iter=1, active_index=[], value=2, active='EURUSD', wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5):
+    def put_decision(self, index_iter=None, current_index=1, active_index=[], value=2, active='EURUSD', wins=[], stop_loss=[], payoff=0, goal_win=2, goal_loss=1, account_type=None, timestamp=5):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'put', timestamp)
         else:
@@ -163,17 +163,17 @@ class BOT_IQ_Option:
                     print('stop loss acionado')
                     exit()
         else:
-            print(f'ativo {active} indisponivel')
             status = False
             status_check = ''
-            remove_index(index_iter, active_index)
+            print(f'ativo {active} indisponivel')
+            index_iter = remove_index(current_index, active_index)
 
-        return status, status_check, wins, stop_loss
+        return status, status_check, wins, stop_loss, active, current_index, index_iter
 
     def change_active(self, index_iter):
         current_index = next(index_iter)
         active = self.get_all_actives()[current_index]
-        return active
+        return active, current_index
     
     def calculate_stop_loss(self, balance, rate_stop_loss):
         return balance - (balance * rate_stop_loss)

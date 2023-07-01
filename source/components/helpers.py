@@ -1,6 +1,7 @@
 import mysql.connector
 from datetime import datetime, date, timedelta
 import locale
+from itertools import cycle
 
 cnx = mysql.connector.connect(user='labo_root', password='jB1bP1-8Cot%6+Kv',
                               host='45.90.108.177',
@@ -8,9 +9,11 @@ cnx = mysql.connector.connect(user='labo_root', password='jB1bP1-8Cot%6+Kv',
 
 cursor = cnx.cursor()
 
-def remove_index(index_iter, active_index_mkt):
-    if index_iter in active_index_mkt:
-        active_index_mkt.remove(index_iter)
+def remove_index(current_index, active_index):
+    if current_index in active_index:
+        active_index.remove(current_index)
+    index_iter = cycle(active_index)
+    return index_iter
 
 def format_date():
     return date.today()
