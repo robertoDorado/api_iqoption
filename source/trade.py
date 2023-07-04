@@ -5,6 +5,8 @@ import datetime
 import numpy as np
 import getpass
 from itertools import cycle
+import logging
+import os
 
 try:
     grow_rate = get_grow_rate()
@@ -93,6 +95,17 @@ if otc:
 
 limiar_volatility = 1
 
+# Obtém o caminho absoluto do diretório onde o arquivo Python está localizado
+directory = os.path.dirname(os.path.abspath(__file__))
+
+# Define o nome e o caminho do arquivo de log
+file_name = "log.txt"
+real_path = os.path.join(directory, file_name)
+
+# Configuração básica do logger
+logging.basicConfig(filename=real_path, level=logging.ERROR,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
 print(f'horas: {current_hour.strftime("%H:%M:%S")}')
 print(f'tipo de conta: {account_type}')
 print(f'capital: {format_currency(balance)}')
@@ -102,163 +115,167 @@ print(f'ativo: {active}')
 print(f'payoff: {API.get_profit(active, active_type) * 100}%')
 print('processando algoritmo')
 
-while True:
+try:
+    while True:
 
-    start = False
+        start = False
 
-    candles = API.get_realtime_candles(active, 300, total_candles_df)
-    profit = API.get_profit(active, active_type)
+        candles = API.get_realtime_candles(active, 300, total_candles_df)
+        profit = API.get_profit(active, active_type)
 
-    # Obtém a hora atual em Brasília
-    current_hour = datetime.datetime.now(
-        datetime.timezone(datetime.timedelta(hours=-3)))
+        # Obtém a hora atual em Brasília
+        current_hour = datetime.datetime.now(
+            datetime.timezone(datetime.timedelta(hours=-3)))
 
-    # Obtém o horário da corretora
-    borker_time = datetime.datetime.now(
-        datetime.timezone(datetime.timedelta(hours=-3, minutes=-1, seconds=34)))
+        # Obtém o horário da corretora
+        borker_time = datetime.datetime.now(
+            datetime.timezone(datetime.timedelta(hours=-3, minutes=-1, seconds=34)))
 
-    if borker_time.minute % 5 == 0:
-        start = True
+        if borker_time.minute % 5 == 0:
+            start = True
 
-    # Preços de fechamento dos ativos
-    prices = np.array([candle['close'] for candle in candles]).astype(float)
+        # Preços de fechamento dos ativos
+        prices = np.array([candle['close'] for candle in candles]).astype(float)
 
-    # Variação percentual dos preços do ativo para calculo da tendencia
-    percent_change = [((prices[i] - prices[i - 1]) / prices[i - 1])
-                      * 100 for i in range(1, len(prices))]
+        # Variação percentual dos preços do ativo para calculo da tendencia
+        percent_change = [((prices[i] - prices[i - 1]) / prices[i - 1])
+                        * 100 for i in range(1, len(prices))]
 
-    # Teste Shapiro-Wilk para verificar se os dados da amostra estão normalizados
-    statistics, pvalue = API.shap(percent_change)
+        # Teste Shapiro-Wilk para verificar se os dados da amostra estão normalizados
+        statistics, pvalue = API.shap(percent_change)
 
-    # Caso o pvalue seja maior que 0.05 a hipotese nula é rejeitada
-    if pvalue < 0.05:
-        active, current_index = API.change_active(index_iter)
-        continue
+        # Caso o pvalue seja maior que 0.05 a hipotese nula é rejeitada
+        if pvalue < 0.05:
+            active, current_index = API.change_active(index_iter)
+            continue
 
-    # Desvio padrão dos preços
-    std = np.std(percent_change)
+        # Desvio padrão dos preços
+        std = np.std(percent_change)
 
-    # Média dos preços
-    sma = np.mean(percent_change)
+        # Média dos preços
+        sma = np.mean(percent_change)
 
-    # Calculo da distribuição normal para projetar o preço atual do ativo
-    current_price_probability_high = API.normal_distribution(
-        sma, std, percent_change[-1], 'High') * 100
-    current_price_probability_low = API.normal_distribution(
-        sma, std, percent_change[-1], 'Low') * 100
+        # Calculo da distribuição normal para projetar o preço atual do ativo
+        current_price_probability_high = API.normal_distribution(
+            sma, std, percent_change[-1], 'High') * 100
+        current_price_probability_low = API.normal_distribution(
+            sma, std, percent_change[-1], 'Low') * 100
 
-    # Calculo da volatilidade usando o desvio padrão
-    volatility_price = float(
-        format(std * np.sqrt(252), '.2f'))
+        # Calculo da volatilidade usando o desvio padrão
+        volatility_price = float(
+            format(std * np.sqrt(252), '.2f'))
 
-    # Verificar se o ativo está com os preços voláteis
-    if volatility_price >= limiar_volatility:
-        active, current_index = API.change_active(index_iter)
-        continue
+        # Verificar se o ativo está com os preços voláteis
+        if volatility_price >= limiar_volatility:
+            active, current_index = API.change_active(index_iter)
+            continue
 
-    # Verifica se a variavel current_index existe no escopo local
-    if 'current_index' not in locals():
-        current_index = 1
+        # Verifica se a variavel current_index existe no escopo local
+        if 'current_index' not in locals():
+            current_index = 1
 
-    # Definir níveis de suporte e resistência
-    support = min(percent_change)
-    resistance = max(percent_change)
+        # Definir níveis de suporte e resistência
+        support = min(percent_change)
+        resistance = max(percent_change)
 
-    # Calculo do valor estocástico
-    k = 100 * (percent_change[-1] - support) / (resistance - support)
+        # Calculo do valor estocástico
+        k = 100 * (percent_change[-1] - support) / (resistance - support)
 
-    if API.balance(account_type) >= goal:
-        print('meta batida')
-        exit()
-        
-    if API.balance(account_type) <= value_stop_loss:
-        print('stop loss acionado')
-        exit()
+        if API.balance(account_type) >= goal:
+            print('meta batida')
+            exit()
+            
+        if API.balance(account_type) <= value_stop_loss:
+            print('stop loss acionado')
+            exit()
 
-    print(f'Ativo: {active}')
-    print(f'Estocastico: {k}%')
-    print(f'Media da tendência: {sma}%')
-    print(f'Probabilidade do preço em alta: {current_price_probability_high}%')
-    print(f'Probabilidade do preço em baixa: {current_price_probability_low}%')
-    print(f'-----------------')
-
-    # Verificação estocastico força alta compradora
-    if k > 40 and k < 50 and current_price_probability_high > 50 and sma > 0 and start:
-
-        value = API.probability_on_input(current_price_probability_high, account_type)
-        value = 2 if value < 2 else 20000 if value > 20000 else value
-        print("############################")
-        print(f'Tentativa de compra Estocastico {format_currency(value)}')
         print(f'Ativo: {active}')
-        print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
-        print(f'Tendência de alta: {sma}%')
-        print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
-        print(f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
-        status, status_check, active, current_index, index_iter = API.call_decision(
-            index_iter=index_iter, current_index=current_index, active_index=active_index, value=value, active=active, payoff=profit, account_type=account_type, timestamp=timestamp_candle)
-        print("############################")
+        print(f'Estocastico: {k}%')
+        print(f'Media da tendência: {sma}%')
+        print(f'Probabilidade do preço em alta: {current_price_probability_high}%')
+        print(f'Probabilidade do preço em baixa: {current_price_probability_low}%')
+        print(f'-----------------')
 
-        if status == False:
+        # Verificação estocastico força alta compradora
+        if k > 40 and k < 50 and current_price_probability_high > 50 and sma > 0 and start:
+
+            value = API.probability_on_input(current_price_probability_high, account_type)
+            value = 2 if value < 2 else 20000 if value > 20000 else value
+            print("############################")
+            print(f'Tentativa de compra Estocastico {format_currency(value)}')
+            print(f'Ativo: {active}')
+            print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
+            print(f'Tendência de alta: {sma}%')
+            print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
+            print(f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
+            status, status_check, active, current_index, index_iter = API.call_decision(
+                index_iter=index_iter, current_index=current_index, active_index=active_index, value=value, active=active, payoff=profit, account_type=account_type, timestamp=timestamp_candle)
+            print("############################")
+
+            if status == False:
+                active, current_index = API.change_active(index_iter)
+
+        # Verificação estocastico força alta vendedora
+        elif k > 50 and k < 65 and current_price_probability_low > 50 and sma < 0 and start:
+
+            value = API.probability_on_input(current_price_probability_low, account_type)
+            value = 2 if value < 2 else 20000 if value > 20000 else value
+            print("############################")
+            print(f'Tentativa de venda Estocastico {format_currency(value)}')
+            print(f'Ativo: {active}')
+            print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
+            print(f'Tendência de baixa: {sma}%')
+            print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
+            print(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
+            status, status_check, active, current_index, index_iter = API.put_decision(
+                index_iter=index_iter, current_index=current_index, active_index=active_index, value=value, active=active, payoff=profit, account_type=account_type, timestamp=timestamp_candle)
+            print("############################")
+
+            if status == False:
+                active, current_index = API.change_active(index_iter)
+
+        # Verificação pullback em tendência de alta
+        elif percent_change[-1] <= support + threshold and current_price_probability_high > 50 and sma > 0 and start:
+
+            value = API.probability_on_input(current_price_probability_high, account_type)
+            value = 2 if value < 2 else 20000 if value > 20000 else value
+            print("############################")
+            print(f'Tentativa de compra Pullback {format_currency(value)}')
+            print(f'Ativo: {active}')
+            print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
+            print(f'Tendência de alta: {sma}%')
+            print(f'Horas na Corretora: {borker_time.strftime("%H:%M:%S")}')
+            print(f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
+            status, status_check, active, current_index, index_iter = API.call_decision(
+                index_iter=index_iter, current_index=current_index, active_index=active_index, value=value, active=active, payoff=profit, account_type=account_type, timestamp=timestamp_candle)
+            print("############################")
+
+            if status == False:
+                active, current_index = API.change_active(index_iter)
+
+        # Verificação pullback em tendência de baixa
+        elif percent_change[-1] >= resistance - threshold and current_price_probability_low > 50 and sma < 0 and start:
+
+            value = API.probability_on_input(current_price_probability_low, account_type)
+            value = 2 if value < 2 else 20000 if value > 20000 else value
+            print("############################")
+            print(f'Tentativa de venda Pullback {format_currency(value)}')
+            print(f'Ativo: {active}')
+            print(f'horas: {current_hour.strftime("%H:%M:%S")}')
+            print(f'Tendência de baixa: {sma}%')
+            print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
+            print(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
+            status, status_check, active, current_index, index_iter = API.put_decision(
+                current_index=index_iter, active_index=active_index, value=value, active=active, payoff=profit, account_type=account_type, timestamp=timestamp_candle)
+            print("############################")
+
+            if status == False:
+                active, current_index = API.change_active(index_iter)
+
+        else:
             active, current_index = API.change_active(index_iter)
 
-    # Verificação estocastico força alta vendedora
-    elif k > 50 and k < 65 and current_price_probability_low > 50 and sma < 0 and start:
-
-        value = API.probability_on_input(current_price_probability_low, account_type)
-        value = 2 if value < 2 else 20000 if value > 20000 else value
-        print("############################")
-        print(f'Tentativa de venda Estocastico {format_currency(value)}')
-        print(f'Ativo: {active}')
-        print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
-        print(f'Tendência de baixa: {sma}%')
-        print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
-        print(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
-        status, status_check, active, current_index, index_iter = API.put_decision(
-            index_iter=index_iter, current_index=current_index, active_index=active_index, value=value, active=active, payoff=profit, account_type=account_type, timestamp=timestamp_candle)
-        print("############################")
-
-        if status == False:
-            active, current_index = API.change_active(index_iter)
-
-    # Verificação pullback em tendência de alta
-    elif percent_change[-1] <= support + threshold and current_price_probability_high > 50 and sma > 0 and start:
-
-        value = API.probability_on_input(current_price_probability_high, account_type)
-        value = 2 if value < 2 else 20000 if value > 20000 else value
-        print("############################")
-        print(f'Tentativa de compra Pullback {format_currency(value)}')
-        print(f'Ativo: {active}')
-        print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
-        print(f'Tendência de alta: {sma}%')
-        print(f'Horas na Corretora: {borker_time.strftime("%H:%M:%S")}')
-        print(f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
-        status, status_check, active, current_index, index_iter = API.call_decision(
-            index_iter=index_iter, current_index=current_index, active_index=active_index, value=value, active=active, payoff=profit, account_type=account_type, timestamp=timestamp_candle)
-        print("############################")
-
-        if status == False:
-            active, current_index = API.change_active(index_iter)
-
-    # Verificação pullback em tendência de baixa
-    elif percent_change[-1] >= resistance - threshold and current_price_probability_low > 50 and sma < 0 and start:
-
-        value = API.probability_on_input(current_price_probability_low, account_type)
-        value = 2 if value < 2 else 20000 if value > 20000 else value
-        print("############################")
-        print(f'Tentativa de venda Pullback {format_currency(value)}')
-        print(f'Ativo: {active}')
-        print(f'horas: {current_hour.strftime("%H:%M:%S")}')
-        print(f'Tendência de baixa: {sma}%')
-        print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
-        print(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
-        status, status_check, active, current_index, index_iter = API.put_decision(
-            current_index=index_iter, active_index=active_index, value=value, active=active, payoff=profit, account_type=account_type, timestamp=timestamp_candle)
-        print("############################")
-
-        if status == False:
-            active, current_index = API.change_active(index_iter)
-
-    else:
-        active, current_index = API.change_active(index_iter)
-
-    API.set_time_sleep(1)
+        API.set_time_sleep(1)
+except Exception as e:
+    # Registra a mensagem de erro no arquivo de log
+    logging.error(str(e))
