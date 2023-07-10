@@ -164,11 +164,9 @@ class BOT_IQ_Option:
         return stats.shapiro(data)
     
     def probability_on_input(self, probability, account_type):
-        if probability > 50 and probability < 60:
+        if probability >= 50 and probability <= 60:
             return float(format(self.balance(account_type) * 0.005, '.2f'))
-        elif probability > 60 and probability < 70:
+        elif probability > 60 and probability <= 70:
             return float(format(self.balance(account_type) * 0.01, '.2f'))
-        elif probability > 70 and probability < 80:
-            return float(format(self.balance(account_type) * 0.02, '.2f'))
-        elif probability > 80:
-            return float(format(self.balance(account_type) * 0.03, '.2f'))
+        elif probability > 70:
+            return float(format(self.balance(account_type) * 0.015, '.2f'))
