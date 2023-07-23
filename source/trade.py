@@ -197,7 +197,7 @@ try:
         print(f'-----------------')
 
         # Verificação estocastico força alta compradora
-        if k > 40 and k < 50 and current_price_probability_high > 50 and sma > 0 and start:
+        if k > 50 and k < 55 and current_price_probability_high > 50 and sma > 0 and start:
 
             value = API.probability_on_input(current_price_probability_high, account_type)
             value = 2 if value < 2 else 20000 if value > 20000 else value
@@ -216,7 +216,7 @@ try:
                 active, current_index = API.change_active(index_iter)
 
         # Verificação estocastico força alta vendedora
-        elif k > 50 and k < 65 and current_price_probability_low > 50 and sma < 0 and start:
+        elif k > 55 and k < 60 and current_price_probability_low > 50 and sma < 0 and start:
 
             value = API.probability_on_input(current_price_probability_low, account_type)
             value = 2 if value < 2 else 20000 if value > 20000 else value

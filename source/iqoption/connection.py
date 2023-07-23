@@ -168,5 +168,3 @@ class BOT_IQ_Option:
             return float(format(self.balance(account_type) * 0.005, '.2f'))
         elif probability > 60 and probability <= 70:
             return float(format(self.balance(account_type) * 0.01, '.2f'))
-        elif probability > 70:
-            return float(format(self.balance(account_type) * 0.015, '.2f'))
