@@ -95,7 +95,7 @@ class BOT_IQ_Option:
         self.instance.stop_candles_stream(active, size)
         return list(candles.values())
 
-    def call_decision(self, index_iter=None, current_index=1, active_index=[], value=2, active='EURUSD', payoff=0, account_type='PRACTICE', timestamp=5):
+    def call_decision(self, index_iter=0, current_index=1, active_index=[], value=2, active='EURUSD', account_type='PRACTICE', timestamp=5, wins=[], loss=[]):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'call', timestamp)
         else:
@@ -107,20 +107,20 @@ class BOT_IQ_Option:
             status_check, check_value = self.check_win_or_loss(id, 'v4')
 
             if status_check == 'win':
-                persist_data(status_check, active, float(format(check_value, '.2f')),
-                             payoff, account_type, float(format(self.balance(account_type), '.2f')))
+                wins.append(status_check)
+                print(f'Win: {len(wins)}')
             else:
-                persist_data(status_check, active, float(format(check_value * -1, '.2f')),
-                             payoff, account_type, float(format(self.balance(account_type), '.2f')))
+                loss.append(status_check)
+                print(f'Loss: {len(loss)}')
         else:
             status = False
             status_check = ''
             print(f'ativo {active} indisponivel')
             index_iter = remove_index(current_index, active_index)
 
-        return status, status_check, active, current_index, index_iter
+        return status, status_check, active, current_index, index_iter, wins, loss
 
-    def put_decision(self, index_iter=None, current_index=1, active_index=[], value=2, active='EURUSD', payoff=0, account_type='PRACTICE', timestamp=5):
+    def put_decision(self, index_iter=0, current_index=1, active_index=[], value=2, active='EURUSD', account_type='PRACTICE', timestamp=5, wins=[], loss=[]):
         if self.balance(account_type) >= value:
             status, id = self.call_or_put(value, active, 'put', timestamp)
         else:
@@ -132,18 +132,18 @@ class BOT_IQ_Option:
             status_check, check_value = self.check_win_or_loss(id, 'v4')
 
             if status_check == 'win':
-                persist_data(status_check, active, float(format(check_value, '.2f')),
-                             payoff, account_type, float(format(self.balance(account_type), '.2f')))
+                wins.append(status_check)
+                print(f'Win: {len(wins)}')
             else:
-                persist_data(status_check, active, float(format(check_value * -1, '.2f')),
-                             payoff, account_type, float(format(self.balance(account_type), '.2f')))
+                loss.append(status_check)
+                print(f'Loss: {len(loss)}')
         else:
             status = False
             status_check = ''
             print(f'ativo {active} indisponivel')
             index_iter = remove_index(current_index, active_index)
 
-        return status, status_check, active, current_index, index_iter
+        return status, status_check, active, current_index, index_iter, wins, loss
 
     def change_active(self, index_iter):
         current_index = next(index_iter)
@@ -168,3 +168,10 @@ class BOT_IQ_Option:
             return float(format(self.balance(account_type) * 0.005, '.2f'))
         elif probability > 60 and probability <= 70:
             return float(format(self.balance(account_type) * 0.01, '.2f'))
+        elif probability > 70 and probability <= 80:
+            return float(format(self.balance(account_type) * 0.02, '.2f'))
+        elif probability > 80 and probability <= 90:
+            return float(format(self.balance(account_type) * 0.03, '.2f'))
+        else:
+            return 5
+            
