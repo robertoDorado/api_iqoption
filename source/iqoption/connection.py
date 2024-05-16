@@ -165,13 +165,13 @@ class BOT_IQ_Option:
     
     def probability_on_input(self, probability, account_type):
         if probability >= 50 and probability <= 60:
-            return float(format(self.balance(account_type) * 0.005, '.2f'))
+            return float(format(self.balance(account_type) * 0.05, '.2f'))
         elif probability > 60 and probability <= 70:
-            return float(format(self.balance(account_type) * 0.01, '.2f'))
+            return float(format(self.balance(account_type) * 0.1, '.2f'))
         elif probability > 70 and probability <= 80:
-            return float(format(self.balance(account_type) * 0.02, '.2f'))
+            return float(format(self.balance(account_type) * 0.2, '.2f'))
         elif probability > 80 and probability <= 90:
-            return float(format(self.balance(account_type) * 0.03, '.2f'))
+            return float(format(self.balance(account_type) * 0.3, '.2f'))
         else:
             return 5
             

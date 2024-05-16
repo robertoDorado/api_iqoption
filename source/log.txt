@@ -1,0 +1,7 @@
+2024-05-14 17:15:39,747 - ERROR - **error** get_candles need reconnect
+2024-05-15 12:13:20,838 - ERROR - **error** get_candles need reconnect
+2024-05-15 12:14:51,214 - ERROR - **error** get_candles need reconnect
+2024-05-15 12:14:53,094 - ERROR - **error** get_candles need reconnect
+2024-05-15 12:14:53,215 - ERROR - The read operation timed out
+2024-05-16 08:45:08,138 - ERROR - name 'start' is not defined
+2024-05-16 09:47:51,028 - ERROR - 'int' object is not an iterator

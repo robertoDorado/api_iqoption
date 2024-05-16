@@ -105,7 +105,7 @@ loss = []
 try:
     while True:
 
-        start = False
+        # start = False
 
         candles = API.get_realtime_candles(active, 300, total_candles_df)
         profit = API.get_profit(active, active_type)
@@ -118,8 +118,8 @@ try:
         borker_time = datetime.datetime.now(
             datetime.timezone(datetime.timedelta(hours=-3, minutes=-1, seconds=34)))
 
-        if borker_time.minute % 5 == 0:
-            start = True
+        # if borker_time.minute % 5 == 0:
+        #     start = True
 
         # Preços de fechamento dos ativos
         prices = np.array([candle['close'] for candle in candles]).astype(float)
@@ -132,9 +132,9 @@ try:
         statistics, pvalue = API.shap(percent_change)
 
         # Caso o pvalue seja maior que 0.05 a hipotese nula é rejeitada
-        if pvalue < 0.05:
-            active, current_index = API.change_active(index_iter)
-            continue
+        # if pvalue < 0.05:
+        #     active, current_index = API.change_active(index_iter)
+        #     continue
 
         # Desvio padrão dos preços
         std = np.std(percent_change)
@@ -153,9 +153,9 @@ try:
             format(std * np.sqrt(252), '.2f'))
 
         # Verificar se o ativo está com os preços voláteis
-        if volatility_price >= limiar_volatility:
-            active, current_index = API.change_active(index_iter)
-            continue
+        # if volatility_price >= limiar_volatility:
+        #     active, current_index = API.change_active(index_iter)
+        #     continue
 
         # Verifica se a variavel current_index existe no escopo local
         if 'current_index' not in locals():
@@ -181,88 +181,158 @@ try:
         print(f'Media da tendência: {sma}%')
         print(f'Probabilidade do preço em alta: {current_price_probability_high}%')
         print(f'Probabilidade do preço em baixa: {current_price_probability_low}%')
+        print(f'Índice Shapiro: {pvalue}%')
+        print(f'Volatilidade: {volatility_price}%')
         print(f'-----------------')
 
         # Verificação estocastico força alta compradora
-        if k > 50 and k < 55 and current_price_probability_high > 50 and sma > 0 and start:
+        if k > 50 and k < 55 and current_price_probability_high > 50 and sma > 0:
             value = API.probability_on_input(current_price_probability_high, account_type)
             value = 2 if value < 2 else 20000 if value > 20000 else value
-            print("############################")
-            print(f'Tentativa de compra Estocastico {format_currency(value)}')
-            print(f'Ativo: {active}')
-            print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
-            print(f'Tendência de alta: {sma}%')
-            print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
-            print(
-                f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
+
             status, status_check, active, current_index, index_iter, wins, loss = API.call_decision(
                 index_iter=index_iter, current_index=current_index, active_index=active_index,
                 value=value, active=active, account_type=account_type,
                 timestamp=timestamp_candle, wins=wins, loss=loss)
+            
             print("############################")
+            print(f'Tentativa de compra Estocastico {format_currency(value)}')
+            print(f'Ativo: {active}')
+            print(f'Horas: {current_hour.strftime("%d/%m/%Y %H:%M:%S")}')
+            print(f'Tendência de alta: {sma}%')
+            print(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
+            print(f'Índice Shapiro: {pvalue}%')
+            print(f'Volatilidade: {volatility_price}%')
+            print(f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
+            print("############################")
+
+            with open("source/trade.txt", "a") as file:
+                file.write("############################\n")
+                file.write(f'Tentativa de compra Estocastico {format_currency(value)}\n')
+                file.write(f'Ativo: {active}\n')
+                file.write(f'Horas: {current_hour.strftime("%d/%m/%Y %H:%M:%S")}\n')
+                file.write(f'Tendência de alta: {sma}%\n')
+                file.write(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
+                file.write(f'Índice Shapiro: {pvalue}%\n')
+                file.write(f'Volatilidade: {volatility_price}%\n')
+                file.write(f'Probabilidade de preço atual em alta: {current_price_probability_high}%\n')
+                file.write(f'status: {status_check}\n')
+                file.write("############################\n")
+                file.close()
 
             if status == False:
                 active, current_index = API.change_active(index_iter)
 
         # Verificação estocastico força alta vendedora
-        elif k > 55 and k < 60 and current_price_probability_low > 50 and sma < 0 and start:
+        elif k > 55 and k < 60 and current_price_probability_low > 50 and sma < 0:
             value = API.probability_on_input(
                 current_price_probability_low, account_type)
             value = 2 if value < 2 else 20000 if value > 20000 else value
-            print("############################")
-            print(f'Tentativa de venda Estocastico {format_currency(value)}')
-            print(f'Ativo: {active}')
-            print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
-            print(f'Tendência de baixa: {sma}%')
-            print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
-            print(
-                f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
+
             status, status_check, active, current_index, index_iter, wins, loss = API.put_decision(
                 index_iter=index_iter, current_index=current_index, active_index=active_index,
                 value=value, active=active, account_type=account_type,
                 timestamp=timestamp_candle, wins=wins, loss=loss)
+            
             print("############################")
+            print(f'Tentativa de venda Estocastico {format_currency(value)}')
+            print(f'Ativo: {active}')
+            print(f'Horas: {current_hour.strftime("%d/%m/%Y %H:%M:%S")}')
+            print(f'Tendência de baixa: {sma}%')
+            print(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
+            print(f'Índice Shapiro: {pvalue}%')
+            print(f'Volatilidade: {volatility_price}%')
+            print(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
+            print("############################")
+
+            with open("source/trade.txt", "a") as file:
+                file.write("############################\n")
+                file.write(f'Tentativa de venda Estocastico {format_currency(value)}\n')
+                file.write(f'Ativo: {active}\n')
+                file.write(f'Horas: {current_hour.strftime("%d/%m/%Y %H:%M:%S")}\n')
+                file.write(f'Tendência de baixa: {sma}%\n')
+                file.write(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
+                file.write(f'Índice Shapiro: {pvalue}%\n')
+                file.write(f'Volatilidade: {volatility_price}%\n')
+                file.write(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%\n')
+                file.write(f'status: {status_check}\n')
+                file.write("############################\n")
+                file.close()
 
             if status == False:
                 active, current_index = API.change_active(index_iter)
 
         # Verificação pullback em tendência de alta
-        elif percent_change[-1] <= support + threshold and current_price_probability_high > 50 and sma > 0 and start:
+        elif percent_change[-1] <= support + threshold and current_price_probability_high > 50 and sma > 0:
             value = API.probability_on_input(current_price_probability_high, account_type)
             value = 2 if value < 2 else 20000 if value > 20000 else value
-            print("############################")
-            print(f'Tentativa de compra Pullback {format_currency(value)}')
-            print(f'Ativo: {active}')
-            print(f'Horas: {current_hour.strftime("%H:%M:%S")}')
-            print(f'Tendência de alta: {sma}%')
-            print(f'Horas na Corretora: {borker_time.strftime("%H:%M:%S")}')
-            print(
-                f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
+
             status, status_check, active, current_index, index_iter, wins, loss = API.call_decision(
                 index_iter=index_iter, current_index=current_index, active_index=active_index,
                 value=value, active=active, account_type=account_type,
                 timestamp=timestamp_candle, wins=wins, loss=loss)
+            
             print("############################")
+            print(f'Tentativa de compra Pullback {format_currency(value)}')
+            print(f'Ativo: {active}')
+            print(f'Horas: {current_hour.strftime("%d/%m/%Y %H:%M:%S")}')
+            print(f'Tendência de alta: {sma}%')
+            print(f'Horas na Corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
+            print(f'Índice Shapiro: {pvalue}%')
+            print(f'Volatilidade: {volatility_price}%')
+            print(f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
+            print("############################")
+
+            with open("source/trade.txt", "a") as file:
+                file.write("############################\n")
+                file.write(f'Tentativa de compra Pullback {format_currency(value)}\n')
+                file.write(f'Ativo: {active}\n')
+                file.write(f'Horas: {current_hour.strftime("%d/%m/%Y %H:%M:%S")}\n')
+                file.write(f'Tendência de alta: {sma}%\n')
+                file.write(f'Horas na Corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
+                file.write(f'Índice Shapiro: {pvalue}%\n')
+                file.write(f'Volatilidade: {volatility_price}%\n')
+                file.write(f'Probabilidade de preço atual em alta: {current_price_probability_high}%\n')
+                file.write(f'status: {status_check}\n')
+                file.write("############################\n")
+                file.close()
 
             if status == False:
                 active, current_index = API.change_active(index_iter)
 
         # Verificação pullback em tendência de baixa
-        elif percent_change[-1] >= resistance - threshold and current_price_probability_low > 50 and sma < 0 and start:
+        elif percent_change[-1] >= resistance - threshold and current_price_probability_low > 50 and sma < 0:
             value = API.probability_on_input(current_price_probability_low, account_type)
             value = 2 if value < 2 else 20000 if value > 20000 else value
-            print("############################")
-            print(f'Tentativa de venda Pullback {format_currency(value)}')
-            print(f'Ativo: {active}')
-            print(f'horas: {current_hour.strftime("%H:%M:%S")}')
-            print(f'Tendência de baixa: {sma}%')
-            print(f'Horas na corretora: {borker_time.strftime("%H:%M:%S")}')
-            print(
-                f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
+            
             status, status_check, active, current_index, index_iter, wins, loss = API.put_decision(
                 current_index=index_iter, active_index=active_index, value=value, active=active,
                 account_type=account_type, timestamp=timestamp_candle, wins=wins, loss=loss)
+            
             print("############################")
+            print(f'Tentativa de venda Pullback {format_currency(value)}')
+            print(f'Ativo: {active}')
+            print(f'horas: {current_hour.strftime("%d/%m/%Y %H:%M:%S")}')
+            print(f'Tendência de baixa: {sma}%')
+            print(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
+            print(f'Índice Shapiro: {pvalue}%')
+            print(f'Volatilidade: {volatility_price}%')
+            print(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
+            print("############################")
+
+            with open("source/trade.txt", "a") as file:
+                file.write("############################\n")
+                file.write(f'Tentativa de venda Pullback {format_currency(value)}\n')
+                file.write(f'Ativo: {active}\n')
+                file.write(f'horas: {current_hour.strftime("%d/%m/%Y %H:%M:%S")}\n')
+                file.write(f'Tendência de baixa: {sma}%\n')
+                file.write(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
+                file.write(f'Índice Shapiro: {pvalue}%\n')
+                file.write(f'Volatilidade: {volatility_price}%\n')
+                file.write(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%\n')
+                file.write(f'status: {status_check}\n')
+                file.write("############################\n")
+                file.close()
 
             if status == False:
                 active, current_index = API.change_active(index_iter)
