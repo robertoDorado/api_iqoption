@@ -36,8 +36,6 @@ if value_stop_loss <= 0:
     print('margem de stop loss inválida')
     exit()
 
-instance = API.get_instance()
-
 market = input('qual será o mercado (otc/mkt): ')
 mkt = True if market == 'mkt' else False
 otc = True if market == 'otc' else False
@@ -76,8 +74,6 @@ if mkt:
 if otc:
     active_index = [76, 77, 79, 81, 84, 85, 1381, 1380, 1382]
     index_iter = cycle(active_index)
-
-limiar_volatility = 1
 
 # Obtém o caminho absoluto do diretório onde o arquivo Python está localizado
 directory = os.path.dirname(os.path.abspath(__file__))
