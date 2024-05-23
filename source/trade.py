@@ -90,13 +90,14 @@ real_path = os.path.join(directory, file_name)
 logging.basicConfig(filename=real_path, level=logging.ERROR,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
+payoff = API.get_profit(active, active_type)
 print(f'horas: {current_hour.strftime("%H:%M:%S")}')
 print(f'tipo de conta: {account_type}')
 print(f'capital: {format_currency(balance)}')
 print(f'meta do dia: {format_currency(goal)}')
 print(f'stop loss: {format_currency(value_stop_loss)}')
 print(f'ativo: {active}')
-print(f'payoff: {API.get_profit(active, active_type) * 100}%')
+print(f'payoff: {payoff * 100}%')
 print('processando algoritmo')
 
 wins = []
@@ -105,10 +106,8 @@ loss = []
 try:
     while True:
 
-        # start = False
-
         candles = API.get_realtime_candles(active, 300, total_candles_df)
-        profit = API.get_profit(active, active_type)
+        payoff = API.get_profit(active, active_type)
 
         # Obtém a hora atual em Brasília
         current_hour = datetime.datetime.now(
@@ -117,9 +116,6 @@ try:
         # Obtém o horário da corretora
         borker_time = datetime.datetime.now(
             datetime.timezone(datetime.timedelta(hours=-3, minutes=-1, seconds=34)))
-
-        # if borker_time.minute % 5 == 0:
-        #     start = True
 
         # Preços de fechamento dos ativos
         prices = np.array([candle['close'] for candle in candles]).astype(float)
@@ -130,11 +126,6 @@ try:
 
         # Teste Shapiro-Wilk para verificar se os dados da amostra estão normalizados
         statistics, pvalue = API.shap(percent_change)
-
-        # Caso o pvalue seja maior que 0.05 a hipotese nula é rejeitada
-        # if pvalue < 0.05:
-        #     active, current_index = API.change_active(index_iter)
-        #     continue
 
         # Desvio padrão dos preços
         std = np.std(percent_change)
@@ -151,11 +142,6 @@ try:
         # Calculo da volatilidade usando o desvio padrão
         volatility_price = float(
             format(std * np.sqrt(252), '.2f'))
-
-        # Verificar se o ativo está com os preços voláteis
-        # if volatility_price >= limiar_volatility:
-        #     active, current_index = API.change_active(index_iter)
-        #     continue
 
         # Verifica se a variavel current_index existe no escopo local
         if 'current_index' not in locals():
@@ -182,6 +168,7 @@ try:
         print(f'Probabilidade do preço em alta: {current_price_probability_high}%')
         print(f'Probabilidade do preço em baixa: {current_price_probability_low}%')
         print(f'Índice Shapiro: {pvalue}%')
+        print(f'Payoff: {payoff * 100}%')
         print(f'Volatilidade: {volatility_price}%')
         print(f'-----------------')
 
@@ -203,6 +190,8 @@ try:
             print(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
             print(f'Índice Shapiro: {pvalue}%')
             print(f'Volatilidade: {volatility_price}%')
+            print(f'Payoff: {payoff * 100}%')
+            print(f'Comissão: {format_currency(value * payoff)}')
             print(f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
             print("############################")
 
@@ -215,6 +204,8 @@ try:
                 file.write(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
                 file.write(f'Índice Shapiro: {pvalue}%\n')
                 file.write(f'Volatilidade: {volatility_price}%\n')
+                file.write(f'Payoff: {payoff * 100}%\n')
+                file.write(f'Comissão: {format_currency(value * payoff)}\n')
                 file.write(f'Probabilidade de preço atual em alta: {current_price_probability_high}%\n')
                 file.write(f'status: {status_check}\n')
                 file.write("############################\n")
@@ -222,6 +213,7 @@ try:
 
             if status == False:
                 active, current_index = API.change_active(index_iter)
+                payoff = API.get_profit(active, active_type)
 
         # Verificação estocastico força alta vendedora
         elif k > 55 and k < 60 and current_price_probability_low > 50 and sma < 0:
@@ -242,6 +234,8 @@ try:
             print(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
             print(f'Índice Shapiro: {pvalue}%')
             print(f'Volatilidade: {volatility_price}%')
+            print(f'Payoff: {payoff * 100}%')
+            print(f'Comissão: {format_currency(value * payoff)}')
             print(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
             print("############################")
 
@@ -254,6 +248,8 @@ try:
                 file.write(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
                 file.write(f'Índice Shapiro: {pvalue}%\n')
                 file.write(f'Volatilidade: {volatility_price}%\n')
+                file.write(f'Payoff: {payoff * 100}%\n')
+                file.write(f'Comissão: {format_currency(value * payoff)}\n')
                 file.write(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%\n')
                 file.write(f'status: {status_check}\n')
                 file.write("############################\n")
@@ -261,6 +257,7 @@ try:
 
             if status == False:
                 active, current_index = API.change_active(index_iter)
+                payoff = API.get_profit(active, active_type)
 
         # Verificação pullback em tendência de alta
         elif percent_change[-1] <= support + threshold and current_price_probability_high > 50 and sma > 0:
@@ -280,6 +277,8 @@ try:
             print(f'Horas na Corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
             print(f'Índice Shapiro: {pvalue}%')
             print(f'Volatilidade: {volatility_price}%')
+            print(f'Payoff: {payoff * 100}%')
+            print(f'Comissão: {format_currency(value * payoff)}')
             print(f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
             print("############################")
 
@@ -292,6 +291,8 @@ try:
                 file.write(f'Horas na Corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
                 file.write(f'Índice Shapiro: {pvalue}%\n')
                 file.write(f'Volatilidade: {volatility_price}%\n')
+                file.write(f'Payoff: {payoff * 100}%\n')
+                file.write(f'Comissão: {format_currency(value * payoff)}\n')
                 file.write(f'Probabilidade de preço atual em alta: {current_price_probability_high}%\n')
                 file.write(f'status: {status_check}\n')
                 file.write("############################\n")
@@ -299,6 +300,7 @@ try:
 
             if status == False:
                 active, current_index = API.change_active(index_iter)
+                payoff = API.get_profit(active, active_type)
 
         # Verificação pullback em tendência de baixa
         elif percent_change[-1] >= resistance - threshold and current_price_probability_low > 50 and sma < 0:
@@ -317,6 +319,8 @@ try:
             print(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
             print(f'Índice Shapiro: {pvalue}%')
             print(f'Volatilidade: {volatility_price}%')
+            print(f'Payoff: {payoff * 100}%')
+            print(f'Comissão: {format_currency(value * payoff)}')
             print(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
             print("############################")
 
@@ -329,6 +333,8 @@ try:
                 file.write(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
                 file.write(f'Índice Shapiro: {pvalue}%\n')
                 file.write(f'Volatilidade: {volatility_price}%\n')
+                file.write(f'Payoff: {payoff * 100}%\n')
+                file.write(f'Comissão: {format_currency(value * payoff)}\n')
                 file.write(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%\n')
                 file.write(f'status: {status_check}\n')
                 file.write("############################\n")
@@ -336,9 +342,11 @@ try:
 
             if status == False:
                 active, current_index = API.change_active(index_iter)
+                payoff = API.get_profit(active, active_type)
 
         else:
             active, current_index = API.change_active(index_iter)
+            payoff = API.get_profit(active, active_type)
 
         API.set_time_sleep(1)
 except Exception as e:
