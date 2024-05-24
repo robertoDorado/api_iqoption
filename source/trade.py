@@ -122,6 +122,12 @@ try:
 
         # Teste Shapiro-Wilk para verificar se os dados da amostra estão normalizados
         statistics, pvalue = API.shap(percent_change)
+        
+        # Caso o pvalue seja maior que 0.05 a hipotese nula é rejeitada
+        if float(format(pvalue, '.2f')) < 0.05:
+            active, current_index = API.change_active(index_iter)
+            payoff = API.get_profit(active, active_type)
+            continue
 
         # Desvio padrão dos preços
         std = np.std(percent_change)
