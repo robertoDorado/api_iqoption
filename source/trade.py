@@ -3,14 +3,17 @@ from iqoption.connection import BOT_IQ_Option
 from components.helpers import *
 import datetime
 import numpy as np
-import getpass
 from itertools import cycle
 import logging
 import os
+import configparser
 
-email_iqoption = input('e-mail iqoption: ')
-password_iqoption = getpass.getpass(prompt='senha iqoption: ')
-account_type = input('tipo de conta (practice/real): ')
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+email_iqoption = config['DEFAULT']['user']
+password_iqoption = config['DEFAULT']['password']
+account_type = config['DEFAULT']['account_type']
 
 if account_type == "real":
     account_type = account_type.upper()
@@ -36,7 +39,7 @@ if value_stop_loss <= 0:
     print('margem de stop loss inválida')
     exit()
 
-market = input('qual será o mercado (otc/mkt): ')
+market = config['DEFAULT']['market']
 mkt = True if market == 'mkt' else False
 otc = True if market == 'otc' else False
 
@@ -44,22 +47,37 @@ if mkt == False and otc == False:
     print('tipo de mercado inválido')
     exit()
 
-if otc:
-    active_index = 76
-elif mkt:
-    active_index = 1
+active_type = config['DEFAULT']['active_type']
+actives_open = API.get_instance().get_all_open_time()
 
-active_type = 'turbo'
-active = API.get_all_actives()[active_index]
+actives_open = [active for active, info in actives_open[active_type].items() if info['open'] == True]
+actives_open = list(map(lambda x: x.replace("-op", ""), actives_open))
 
+active = API.get_all_actives()
+active = {k: v for k, v in active.items() if v in actives_open}
+
+otc_active = {k: v.upper() for k, v in active.items() if v.lower().endswith("-otc")}
+mkt_active = {k: v.upper() for k, v in active.items() if v.lower().endswith("-otc") == False}
+
+otc_active = list(otc_active.keys())
+mkt_active = list(mkt_active.keys())
+
+if len(mkt_active) == 0 and mkt:
+    print('mercado-comum encerrado')
+    exit()
+    
+if len(otc_active) == 0 and otc:
+    print('mercado-otc encerrado')
+    exit()
+    
 try:
-    total_candles_df = int(input('qual será o total de candles para análise: '))
+    total_candles_df = int(config['DEFAULT']['total_candles'])
 except ValueError:
     print('definição de gráfico inválido')
     exit()
 
 try:
-    timestamp_candle = int(input('qual será o timestamp da vela: '))
+    timestamp_candle = int(config['DEFAULT']['timestamp_candles'])
 except ValueError:
     print('timestamp candle inválido')
     exit()
@@ -68,32 +86,36 @@ threshold = 0.001
 current_hour = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
 
 if mkt:
-    active_index = [1, 2, 3, 4, 5, 6, 99, 101]
+    active_index = mkt_active
     index_iter = cycle(active_index)
+    current_index = active_index[0]
 
 if otc:
-    active_index = [76, 77, 79, 81, 84, 85, 1381, 1380, 1382]
+    active_index = otc_active
     index_iter = cycle(active_index)
+    current_index = active_index[0]
 
-# Obtém o caminho absoluto do diretório onde o arquivo Python está localizado
+active = active[current_index]
 directory = os.path.dirname(os.path.abspath(__file__))
-
-# Define o nome e o caminho do arquivo de log
 file_name = "log.txt"
 real_path = os.path.join(directory, file_name)
 
-# Configuração básica do logger
 logging.basicConfig(filename=real_path, level=logging.ERROR,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-payoff = API.get_profit(active, active_type)
+try:
+    payoff = API.get_profit(active, active_type)
+except Exception as e:
+    print('Tipo de ativo inválido')
+    exit()
+
 print(f'horas: {current_hour.strftime("%H:%M:%S")}')
 print(f'tipo de conta: {account_type}')
 print(f'capital: {format_currency(balance)}')
 print(f'meta do dia: {format_currency(goal)}')
 print(f'stop loss: {format_currency(value_stop_loss)}')
 print(f'ativo: {active}')
-print(f'payoff: {payoff * 100}%')
+print(f'payoff: {payoff}%')
 print('processando algoritmo')
 
 wins = []
@@ -125,7 +147,7 @@ try:
         
         # Caso o pvalue seja maior que 0.05 a hipotese nula é rejeitada
         if float(format(pvalue, '.2f')) < 0.05:
-            active, current_index = API.change_active(index_iter)
+            active, current_index = API.change_active(index_iter, active_type)
             payoff = API.get_profit(active, active_type)
             continue
 
@@ -144,10 +166,6 @@ try:
         # Calculo da volatilidade usando o desvio padrão
         volatility_price = float(
             format(std * np.sqrt(252), '.2f'))
-
-        # Verifica se a variavel current_index existe no escopo local
-        if 'current_index' not in locals():
-            current_index = 1
 
         # Definir níveis de suporte e resistência
         support = min(percent_change)
@@ -170,7 +188,7 @@ try:
         print(f'Probabilidade do preço em alta: {current_price_probability_high}%')
         print(f'Probabilidade do preço em baixa: {current_price_probability_low}%')
         print(f'Índice Shapiro: {pvalue}%')
-        print(f'Payoff: {payoff * 100}%')
+        print(f'Payoff: {payoff}%')
         print(f'Volatilidade: {volatility_price}%')
         print(f'-----------------')
 
@@ -192,8 +210,6 @@ try:
             print(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
             print(f'Índice Shapiro: {pvalue}%')
             print(f'Volatilidade: {volatility_price}%')
-            print(f'Payoff: {payoff * 100}%')
-            print(f'Comissão: {format_currency(value * payoff)}')
             print(f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
             print("############################")
 
@@ -206,15 +222,13 @@ try:
                 file.write(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
                 file.write(f'Índice Shapiro: {pvalue}%\n')
                 file.write(f'Volatilidade: {volatility_price}%\n')
-                file.write(f'Payoff: {payoff * 100}%\n')
-                file.write(f'Comissão: {format_currency(value * payoff)}\n')
                 file.write(f'Probabilidade de preço atual em alta: {current_price_probability_high}%\n')
                 file.write(f'status: {status_check}\n')
                 file.write("############################\n")
                 file.close()
 
             if status == False:
-                active, current_index = API.change_active(index_iter)
+                active, current_index = API.change_active(index_iter, active_type)
                 payoff = API.get_profit(active, active_type)
 
         # Verificação estocastico força alta vendedora
@@ -236,8 +250,6 @@ try:
             print(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
             print(f'Índice Shapiro: {pvalue}%')
             print(f'Volatilidade: {volatility_price}%')
-            print(f'Payoff: {payoff * 100}%')
-            print(f'Comissão: {format_currency(value * payoff)}')
             print(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
             print("############################")
 
@@ -250,15 +262,13 @@ try:
                 file.write(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
                 file.write(f'Índice Shapiro: {pvalue}%\n')
                 file.write(f'Volatilidade: {volatility_price}%\n')
-                file.write(f'Payoff: {payoff * 100}%\n')
-                file.write(f'Comissão: {format_currency(value * payoff)}\n')
                 file.write(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%\n')
                 file.write(f'status: {status_check}\n')
                 file.write("############################\n")
                 file.close()
 
             if status == False:
-                active, current_index = API.change_active(index_iter)
+                active, current_index = API.change_active(index_iter, active_type)
                 payoff = API.get_profit(active, active_type)
 
         # Verificação pullback em tendência de alta
@@ -279,8 +289,6 @@ try:
             print(f'Horas na Corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
             print(f'Índice Shapiro: {pvalue}%')
             print(f'Volatilidade: {volatility_price}%')
-            print(f'Payoff: {payoff * 100}%')
-            print(f'Comissão: {format_currency(value * payoff)}')
             print(f'Probabilidade de preço atual em alta: {current_price_probability_high}%')
             print("############################")
 
@@ -293,15 +301,13 @@ try:
                 file.write(f'Horas na Corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
                 file.write(f'Índice Shapiro: {pvalue}%\n')
                 file.write(f'Volatilidade: {volatility_price}%\n')
-                file.write(f'Payoff: {payoff * 100}%\n')
-                file.write(f'Comissão: {format_currency(value * payoff)}\n')
                 file.write(f'Probabilidade de preço atual em alta: {current_price_probability_high}%\n')
                 file.write(f'status: {status_check}\n')
                 file.write("############################\n")
                 file.close()
 
             if status == False:
-                active, current_index = API.change_active(index_iter)
+                active, current_index = API.change_active(index_iter, active_type)
                 payoff = API.get_profit(active, active_type)
 
         # Verificação pullback em tendência de baixa
@@ -321,8 +327,6 @@ try:
             print(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}')
             print(f'Índice Shapiro: {pvalue}%')
             print(f'Volatilidade: {volatility_price}%')
-            print(f'Payoff: {payoff * 100}%')
-            print(f'Comissão: {format_currency(value * payoff)}')
             print(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%')
             print("############################")
 
@@ -335,19 +339,17 @@ try:
                 file.write(f'Horas na corretora: {borker_time.strftime("%d/%m/%Y %H:%M:%S")}\n')
                 file.write(f'Índice Shapiro: {pvalue}%\n')
                 file.write(f'Volatilidade: {volatility_price}%\n')
-                file.write(f'Payoff: {payoff * 100}%\n')
-                file.write(f'Comissão: {format_currency(value * payoff)}\n')
                 file.write(f'Probabilidade de preço atual em baixa: {current_price_probability_low}%\n')
                 file.write(f'status: {status_check}\n')
                 file.write("############################\n")
                 file.close()
 
             if status == False:
-                active, current_index = API.change_active(index_iter)
+                active, current_index = API.change_active(index_iter, active_type)
                 payoff = API.get_profit(active, active_type)
 
         else:
-            active, current_index = API.change_active(index_iter)
+            active, current_index = API.change_active(index_iter, active_type)
             payoff = API.get_profit(active, active_type)
 
         API.set_time_sleep(1)

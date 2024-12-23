@@ -8,3 +8,5 @@ venv/
 .idea
 test.py
 source/trade.txt
+config.ini
+source/log.txt

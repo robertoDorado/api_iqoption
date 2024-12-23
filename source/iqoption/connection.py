@@ -145,10 +145,16 @@ class BOT_IQ_Option:
 
         return status, status_check, active, current_index, index_iter, wins, loss
 
-    def change_active(self, index_iter):
+    def change_active(self, index_iter, active_type):
         current_index = next(index_iter)
-        active = self.get_all_actives()[current_index]
-        return active, current_index
+        actives_open = self.instance.get_all_open_time()
+
+        actives_open = [active for active, info in actives_open[active_type].items() if info['open'] == True]
+        actives_open = list(map(lambda x: x.replace("-op", ""), actives_open))
+
+        active = self.get_all_actives()
+        active = {k: v for k, v in active.items() if v in actives_open}
+        return active[current_index], current_index
     
     def calculate_stop_loss(self, balance, rate_stop_loss):
         return balance - (balance * rate_stop_loss)
