@@ -31,9 +31,12 @@ if API.check_my_connection() == False:
 
 balance = API.balance(account_type)
 
-goal = float(format(API.calculate_goal(balance, 0.02), '.2f'))
-value_stop_loss = float(format(API.calculate_stop_loss(
-    balance, 0.01), '.2f'))
+try:
+    goal = float(format(API.calculate_goal(balance, float(config['DEFAULT']['goal'])), '.2f'))
+    value_stop_loss = float(format(API.calculate_stop_loss(balance, float(config['DEFAULT']['stop_loss'])), '.2f'))
+except Exception as e:
+    print('Definições de metas inválidas')
+    exit()
 
 if value_stop_loss <= 0:
     print('margem de stop loss inválida')
